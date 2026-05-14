@@ -291,13 +291,13 @@
     .window-card.maximized {
       width: 90vw !important;
       max-width: 1000px !important;
-      height: 85vh !important;
-      max-height: 85vh !important;
+      height: 82vh !important;
+      max-height: 82vh !important;
       display: flex !important;
       flex-direction: column !important;
       overflow: hidden !important;
       position: fixed !important;
-      inset: 50% auto auto 50% !important;
+      inset: calc(50% + 18px) auto auto 50% !important;
       transform: translate(-50%, -50%) !important;
       z-index: 1001 !important;
     }
@@ -1162,10 +1162,11 @@
       }
 
       .window-card.maximized {
-        width: calc(100vw - 0.75rem) !important;
-        max-width: calc(100vw - 0.75rem) !important;
-        height: calc(100vh - 3.75rem) !important;
-        max-height: calc(100vh - 3.75rem) !important;
+        width: calc(100vw - 1rem) !important;
+        max-width: calc(100vw - 1rem) !important;
+        height: calc(100vh - 5.25rem) !important;
+        max-height: calc(100vh - 5.25rem) !important;
+        inset: calc(50% + 28px) auto auto 50% !important;
       }
 
       footer {
