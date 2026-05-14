@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mason Grajczyk | Living OS Portfolio</title>
+  <meta name="description" content="Interactive retro desktop portfolio for Mason Grajczyk with terminal UI, live windows, and systems-inspired design." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Fira+Code:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #091018;
+      --bg-2: #0e1620;
+      --panel: rgba(14, 20, 29, 0.88);
+      --panel-2: rgba(18, 27, 39, 0.96);
+      --line: rgba(150, 177, 206, 0.16);
+      --line-strong: rgba(150, 177, 206, 0.28);
+      --text: #edf4ff;
+      --muted: #93a4bc;
+      --red: #d54b52;
+      --red-soft: #ff9ca0;
+      --blue: #72b7ff;
+      --blue-soft: #d6e8ff;
+      --cyan: #93efff;
+      --green: #6ddf9a;
+      --shadow: 0 26px 90px rgba(0, 0, 0, 0.44);
+      --radius: 8px;
+      --max: 1180px;
+      --mono: "Fira Code", monospace;
+      --sans: "Instrument Sans", sans-serif;
+      --display: "Syne", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(213, 75, 82, 0.14), transparent 22%),
+        radial-gradient(circle at 85% 14%, rgba(114, 183, 255, 0.14), transparent 24%),
+        linear-gradient(180deg, #081018 0%, #0b1118 42%, #0c1219 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.42;
+      mask-image: linear-gradient(180deg, rgba(255,255,255,0.52), transparent 82%);
+    }
+
+    body::after {
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(255,255,255,0.024) 0px,
+        rgba(255,255,255,0.024) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      opacity: 0.1;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(12px, -14px, 0); }
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes crtSweep {
+      0% { transform: translateY(-100%); opacity: 0.2; }
+      100% { transform: translateY(100vh); opacity: 0.9; }
+    }
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(38px);
+      opacity: 0.22;
+      animation: float 11s ease-in-out infinite;
+    }
+
+    .glow.one { width: 240px; height: 240px; left: -60px; top: 100px; background: rgba(213, 75, 82, 0.42); }
+    .glow.two { width: 280px; height: 280px; right: -70px; top: 220px; background: rgba(114, 183, 255, 0.36); animation-delay: -3s; }
+    .glow.three { width: 300px; height: 180px; left: 34%; bottom: -40px; background: rgba(147, 239, 255, 0.16); animation-delay: -6s; }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(calc(100% - 2rem), var(--max)); margin: 0 auto; position: relative; z-index: 1; }
+
+    #site-shell {
+      opacity: 1;
+      transition: opacity 480ms ease;
+    }
+
+    #site-shell.boot-hidden {
+      opacity: 0;
+    }
+
+    #boot-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #000;
+      color: #b6ffd1;
+      font-family: var(--mono);
+      display: none;
+      overflow: hidden;
+    }
+
+    #boot-overlay.active {
+      display: block;
+    }
+
+    .boot-inner {
+      position: absolute;
+      inset: 0;
+      padding: 2rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    #boot-log {
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      max-width: 70rem;
+    }
+
+    .boot-scanline {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #boot-overlay.exit .boot-scanline {
+      opacity: 1;
+      animation: crtSweep 360ms linear forwards;
+    }
+
+    #boot-overlay.exit #boot-log {
+      opacity: 0;
+      transition: opacity 280ms ease;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(8, 13, 19, 0.82);
+      border-bottom: 1px solid rgba(150, 177, 206, 0.08);
+    }
+
+    .nav-inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .brand,
+    .nav-links,
+    .nav-right,
+    .window-bar,
+    .section-tag,
+    .label,
+    .chip,
+    .meta,
+    .telemetry-track,
+    .terminal-prompt,
+    .terminal-input,
+    .tooltip-panel,
+    .badge {
+      font-family: var(--mono);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.84rem;
+      letter-spacing: 0.08em;
+      color: var(--blue-soft);
+      justify-self: start;
+    }
+
+    .brand-mark {
+      width: 2.2rem;
+      height: 2.2rem;
+      border: 1px solid rgba(114, 183, 255, 0.34);
+      display: grid;
+      place-items: center;
+      color: var(--red-soft);
+      background: rgba(114, 183, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.1rem;
+      font-size: 0.84rem;
+      color: var(--muted);
+      justify-self: center;
+    }
+
+    .nav-links a {
+      position: relative;
+      padding: 0.2rem 0;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -0.15rem;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 180ms ease;
+    }
+
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-links a:hover,
+    .small-link:hover { color: var(--blue); }
+
+    .nav-right {
+      justify-self: end;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .window-card {
+      background: linear-gradient(180deg, rgba(17, 24, 34, 0.86), rgba(10, 16, 24, 0.94));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      transition: opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+      animation: riseIn 0.7s ease both;
+    }
+
+    .window-card:hover,
+    .window-card.active-window {
+      transform: translateY(-4px);
+      box-shadow: 0 0 15px rgba(147, 239, 255, 0.07), 0 34px 110px rgba(0, 0, 0, 0.5);
+      border-color: rgba(147, 239, 255, 0.34);
+    }
+
+    .window-collection:has(.window-card:hover) .window-card:not(:hover) {
+      opacity: 0.6;
+    }
+
+    .window-card.maximized {
+      width: 90vw !important;
+      height: 80vh !important;
+      position: fixed !important;
+      inset: 50% auto auto 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 1001 !important;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .window-card.maximized .window-content {
+      overflow: auto;
+      flex: 1;
+    }
+
+    .window-card.minimized .window-content {
+      display: none;
+    }
+
+    .window-card.hidden {
+      display: none !important;
+    }
+
+    .window-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 10, 0.62);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+      z-index: 1000;
+    }
+
+    .window-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .window-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(150, 177, 206, 0.1);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .window-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lights {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .lights:empty {
+      display: none;
+    }
+
+    .light {
+      width: 0.72rem;
+      height: 0.72rem;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(255,255,255,0.08);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .light.red { background: #ff5f57; }
+    .light.yellow { background: #ffbd2f; }
+    .light.green { background: #28c840; }
+
+    .window-content,
+    .metric,
+    .side-content {
+      padding: 1rem;
+    }
+
+    .hero {
+      padding: 2.75rem 0 1.4rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
+    }
+
+    .hero-main {
+      padding: 1.25rem 1.25rem 1.4rem;
+      border-right: 1px solid rgba(150, 177, 206, 0.08);
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-side {
+      padding: 1rem;
+      background: linear-gradient(180deg, rgba(15, 22, 31, 0.94), rgba(10, 16, 24, 0.98));
+    }
+
+    .status-line,
+    .section-tag,
+    .label,
+    .meta {
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    .status-line { color: var(--red-soft); margin-bottom: 0.9rem; }
+
+    h1, h2, h3 { margin-top: 0; }
+    h1, h2, h3 { font-family: var(--display); }
+
+    h1 {
+      font-size: clamp(3.6rem, 9vw, 7rem);
+      line-height: 0.88;
+      letter-spacing: -0.05em;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+
+    .line-two { display: block; color: var(--blue-soft); }
+
+    .terminal-hero {
+      min-height: 27rem;
+    }
+
+    .terminal-shell {
+      border: 1px solid rgba(150, 177, 206, 0.12);
+      background: rgba(5, 9, 14, 0.6);
+      min-height: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .terminal-output {
+      min-height: 15rem;
+      width: 100%;
+      white-space: pre-wrap;
+      color: var(--muted);
+      line-height: 1.7;
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      align-content: flex-start;
+      text-align: left;
+    }
+
+    .terminal-entry {
+      width: 100%;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: terminalFadeIn 260ms ease forwards;
+    }
+
+    @keyframes terminalFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .terminal-output .hero-name {
+      font-family: var(--display);
+      color: var(--text);
+      font-size: clamp(4.2rem, 10vw, 8.2rem);
+      line-height: 0.88;
+      letter-spacing: -0.05em;
+      margin: 0 0 1rem;
+      text-transform: uppercase;
+    }
+
+    .terminal-output .hero-name span {
+      display: block;
+      color: var(--blue-soft);
+    }
+
+    .terminal-output .hero-bio {
+      max-width: 44rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 1.03rem;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+
+    .terminal-output pre {
+      margin: 0 0 1rem;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .terminal-mode {
+      width: 100%;
+      margin: 0 0 1rem;
+      padding: 0.85rem 0.9rem;
+      border: 1px solid rgba(150, 177, 206, 0.12);
+      background: rgba(255,255,255,0.025);
+      color: var(--blue-soft);
+      font-family: var(--mono);
+      font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+      line-height: 1.45;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .terminal-mode.matrix {
+      color: var(--green);
+      min-height: 12rem;
+    }
+
+    .terminal-mode.bonsai {
+      color: #b8f7c1;
+    }
+
+    .terminal-mode.aquarium {
+      color: var(--cyan);
+      min-height: 12rem;
+    }
+
+    .terminal-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: auto;
+      padding-top: 0.8rem;
+      border-top: 1px solid rgba(150, 177, 206, 0.12);
+      width: 100%;
+      font-family: var(--mono);
+    }
+
+    .terminal-prompt { color: var(--green); flex: 0 0 auto; }
+
+    .terminal-input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--blue-soft);
+      font-size: 0.92rem;
+    }
+
+    .hero-badges,
+    .cta-row,
+    .chips,
+    .project-tags,
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .badge,
+    .chip,
+    .project-tags span,
+    .contact-link {
+      border: 1px solid rgba(150, 177, 206, 0.14);
+      background: rgba(255,255,255,0.03);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .badge {
+      padding: 0.62rem 0.82rem;
+      font-size: 0.78rem;
+      color: #d9e8fb;
+    }
+
+    .badge:hover,
+    .chip:hover,
+    .project-tags span:hover,
+    .contact-link:hover {
+      transform: translateY(-2px);
+      border-color: rgba(114, 183, 255, 0.26);
+      background: rgba(114, 183, 255, 0.08);
+    }
+
+    .cta-row { margin-top: 1rem; }
+
+    .btn {
+      min-height: 46px;
+      padding: 0 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      border: 1px solid transparent;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--red), #f06b71);
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(213, 75, 82, 0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(114, 183, 255, 0.07);
+      border-color: rgba(114, 183, 255, 0.24);
+      color: var(--blue-soft);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.9rem;
+      margin-top: 1.2rem;
+    }
+
+    .metric,
+    .side-pane {
+      background: linear-gradient(180deg, rgba(20, 29, 40, 0.88), rgba(13, 20, 29, 0.94));
+      border: 1px solid rgba(150, 177, 206, 0.12);
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--red-soft);
+      font-size: 1.35rem;
+    }
+
+    .metric span,
+    .muted,
+    ul { color: var(--muted); }
+
+    .side-stack { display: grid; gap: 0.9rem; }
+    .side-content strong { display: block; margin-bottom: 0.3rem; }
+    .label { color: var(--muted); margin-bottom: 0.45rem; }
+
+    section { padding: 1.1rem 0 0; }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+      align-items: center;
+      justify-items: center;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-tag { color: var(--red-soft); }
+
+    .section-copy {
+      display: grid;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .section-copy h2 {
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      letter-spacing: -0.04em;
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .section-copy p {
+      max-width: 44rem;
+      line-height: 1.7;
+      color: var(--muted);
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .window-content p { line-height: 1.7; }
+
+    .chips { margin-top: 0.4rem; }
+
+    .chip {
+      padding: 0.58rem 0.76rem;
+      font-size: 0.78rem;
+      color: #dceaff;
+      position: relative;
+      cursor: default;
+    }
+
+    .tooltip-panel {
+      position: fixed;
+      left: 0;
+      top: 0;
+      max-width: 300px;
+      padding: 0.8rem 0.9rem;
+      background: rgba(18, 20, 24, 0.98);
+      border: 1px solid rgba(114, 183, 255, 0.28);
+      color: var(--blue-soft);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      white-space: normal;
+      z-index: 2000;
+      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.32);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+
+    .tooltip-panel.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .projects-grid,
+    .experience-list,
+    .contact-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .projects-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .project-meta,
+    .meta {
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .project-num,
+    .meta { color: var(--red-soft); }
+
+    .project-tags { margin-top: 1rem; }
+
+    .project-tags span {
+      padding: 0.4rem 0.58rem;
+      font-size: 0.72rem;
+      color: var(--blue-soft);
+    }
+
+    .experience-body {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 1rem;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      line-height: 1.7;
+    }
+
+    .contact-grid {
+      grid-template-columns: 0.9fr 1.1fr;
+      margin-bottom: 5.5rem;
+    }
+
+    .contact-links {
+      display: grid;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .contact-link {
+      padding: 0.9rem 1rem;
+      color: var(--muted);
+    }
+
+    .dock {
+      position: fixed;
+      left: 50%;
+      bottom: 2.2rem;
+      transform: translateX(-50%);
+      z-index: 1002;
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: min(90vw, 860px);
+      padding: 0.55rem 0.7rem;
+      border: 1px solid rgba(150, 177, 206, 0.18);
+      background: rgba(10, 14, 20, 0.72);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
+    }
+
+    .dock:empty { display: none; }
+
+    .dock-item {
+      border: 1px solid rgba(114, 183, 255, 0.18);
+      background: rgba(255,255,255,0.03);
+      color: var(--blue-soft);
+      padding: 0.55rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .dock-item:hover {
+      background: rgba(114, 183, 255, 0.1);
+    }
+
+    .status-widget {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.15rem;
+      min-width: 11.5rem;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid rgba(150, 177, 206, 0.16);
+      background: rgba(255,255,255,0.03);
+      color: var(--blue-soft);
+      font-size: 0.72rem;
+      line-height: 1.35;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-widget .muted-line {
+      color: var(--muted);
+    }
+
+    .title-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .title-control {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .title-control:hover {
+      color: var(--text);
+    }
+
+    footer {
+      padding: 0 0 2rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid,
+      .content-grid,
+      .projects-grid,
+      .contact-grid,
+      .metrics,
+      .section-head,
+      .experience-body,
+      .nav-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links { justify-self: start; justify-content: flex-start; }
+      .nav-right { justify-self: start; }
+      .hero-main { border-right: 0; border-bottom: 1px solid rgba(150, 177, 206, 0.08); }
+    }
+
+    @media (max-width: 720px) {
+      .hero { padding-top: 2rem; }
+      h1, .terminal-output .hero-name { font-size: 3.35rem; }
+      .hero-main,
+      .hero-side,
+      .window-content,
+      .side-content,
+      .metric { padding: 1rem; }
+      .window-bar { flex-direction: column; align-items: start; }
+      .dock {
+        left: 0.75rem;
+        right: 0.75rem;
+        transform: none;
+        bottom: 2.4rem;
+      }
+      .window-card.maximized {
+        width: calc(100vw - 1rem) !important;
+        height: calc(100vh - 2rem) !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="boot-overlay" aria-hidden="true">
+    <div class="boot-inner">
+      <div id="boot-log"></div>
+    </div>
+    <div class="boot-scanline"></div>
+  </div>
+
+  <div class="ambient">
+    <div class="glow one"></div>
+    <div class="glow two"></div>
+    <div class="glow three"></div>
+  </div>
+
+  <div class="window-overlay" id="window-overlay"></div>
+  <div class="dock" id="dock"></div>
+
+  <div id="site-shell" class="boot-hidden">
+    <nav class="nav">
+      <div class="wrap nav-inner">
+        <a href="#top" class="brand">
+          <span class="brand-mark">M</span>
+          <span>MAZON.SYSTEMS</span>
+        </a>
+        <div class="nav-links">
+          <a href="#about">ABOUT</a>
+          <a href="#stack">STACK</a>
+          <a href="#projects">PROJECTS</a>
+          <a href="#experience">EXPERIENCE</a>
+          <a href="#contact">CONTACT</a>
+        </div>
+        <div class="nav-right"><div class="status-widget" id="status-widget"><span id="status-cpu">CPU: 12%</span><span id="status-mem">MEM: 1.2GB / 16GB</span></div></div>
+      </div>
+    </nav>
+
+    <main id="top">
+      <section class="hero">
+        <div class="wrap window-card terminal-hero" data-window-id="hero-window">
+          <div class="window-bar">
+            <div class="lights"></div>
+            <div class="window-title">mason_grajczyk_portfolio.app</div>
+            <div class="title-controls hero-controls">
+              <button class="title-control" data-action="minimize" aria-label="Minimize window">[_]</button>
+              <button class="title-control" data-action="maximize" aria-label="Maximize window">[□]</button>
+              <button class="title-control" data-action="close" aria-label="Close window">[x]</button>
+            </div>
+          </div>
+
+          <div class="hero-grid">
+            <div class="hero-main">
+              <div class="status-line">&gt; SYSTEMS_ENGINEERING / PRACTICAL_TECH / PROBLEM_SOLVING</div>
+              <div class="terminal-shell">
+                <div class="terminal-output" id="terminal-output"></div>
+                <div class="terminal-line">
+                  <span class="terminal-prompt">admin@mazon.systems:~$</span>
+                  <input id="terminal-input" class="terminal-input" type="text" spellcheck="false" autocomplete="off" aria-label="Terminal command input" />
+                </div>
+              </div>
+            </div>
+
+            <aside class="hero-side window-collection">
+              <div class="window-card side-pane" data-window-id="focus-pane">
+                <div class="window-bar">
+                  <div class="lights">
+                    <button class="light red" data-action="close" aria-label="Close window"></button>
+                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                  </div>
+                  <div class="window-title">focus.txt</div>
+                </div>
+                <div class="side-content">
+                  <div class="label">Role focus</div>
+                  <strong>IT, systems, engineering, technical operations</strong>
+                  <span class="muted">Best fit for work that values reliability over fluff.</span>
+                </div>
+              </div>
+
+              <div class="window-card side-pane" data-window-id="education-pane">
+                <div class="window-bar">
+                  <div class="lights">
+                    <button class="light red" data-action="close" aria-label="Close window"></button>
+                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                  </div>
+                  <div class="window-title">education.log</div>
+                </div>
+                <div class="side-content">
+                  <div class="label">Education</div>
+                  <strong>B.S. Computer Engineering</strong>
+                  <span class="muted">North Dakota State University — Fargo, ND</span>
+                </div>
+              </div>
+
+              <div class="window-card side-pane" data-window-id="contact-pane">
+                <div class="window-bar">
+                  <div class="lights">
+                    <button class="light red" data-action="close" aria-label="Close window"></button>
+                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                  </div>
+                  <div class="window-title">contact.cfg</div>
+                </div>
+                <div class="side-content">
+                  <div class="label">Contact</div>
+                  <strong><a class="small-link" href="mailto:masongrajczyk@icloud.com">masongrajczyk@icloud.com</a></strong>
+                  <span class="muted"><a class="small-link" href="tel:7636883442">(763) 688-3442</a></span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="about">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-tag">ABOUT</div>
+            <div class="section-copy">
+              <h2>Built around practical technical work.</h2>
+              <p>I’m most comfortable in environments where things have to function cleanly and consistently. That can mean troubleshooting systems, organizing complex information, deploying software, or handling technical work that needs patience and follow-through.</p>
+            </div>
+          </div>
+
+          <div class="content-grid window-collection">
+            <div class="window-card" data-window-id="how-i-work">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">how_i_work.md</div>
+              </div>
+              <div class="window-content">
+                <h3>HOW I WORK</h3>
+                <p class="muted">I like structure, clear systems, and solving problems without making them more complicated than they need to be. I’m steady with detail-heavy work and comfortable moving between software, hardware, and operations.</p>
+              </div>
+            </div>
+
+            <div class="window-card" data-window-id="what-i-build">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">what_i_build.md</div>
+              </div>
+              <div class="window-content">
+                <h3>WHAT I LIKE BUILDING</h3>
+                <p class="muted">Self-hosted infrastructure, deployment workflows, stable software environments, and technical setups where reliability actually matters.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="stack">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-tag">STACK</div>
+            <div class="section-copy">
+              <h2>Tools and competencies.</h2>
+              <p>The strongest parts of the resume, reframed as a cleaner retro desktop stack view.</p>
+            </div>
+          </div>
+
+          <div class="content-grid window-collection">
+            <div class="window-card" data-window-id="technical-stack">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">technical_stack.json</div>
+              </div>
+              <div class="window-content">
+                <h3>PROGRAMMING + TECHNICAL</h3>
+                <div class="chips">
+                  <span class="chip" data-tooltip="NAME: Java&#10;SYNOPSIS: Object-oriented programming language for structured software development and systems logic.">JAVA</span>
+                  <span class="chip" data-tooltip="NAME: VHDL&#10;SYNOPSIS: Hardware description language used for digital logic design and engineering coursework.">VHDL</span>
+                  <span class="chip" data-tooltip="NAME: MATLAB&#10;SYNOPSIS: Numerical computing environment for analysis, simulation, and engineering workflows.">MATLAB</span>
+                  <span class="chip" data-tooltip="NAME: System Configuration&#10;SYNOPSIS: Setting up operating environments, services, dependencies, and runtime behavior so systems stay usable.">SYSTEM CONFIGURATION</span>
+                  <span class="chip" data-tooltip="NAME: Software Deployment&#10;SYNOPSIS: Moving code or services into working environments with stability and repeatability in mind.">SOFTWARE DEPLOYMENT</span>
+                  <span class="chip" data-tooltip="NAME: Containerization&#10;SYNOPSIS: Isolating services and applications in controlled, reproducible runtime environments.">CONTAINERIZATION</span>
+                  <span class="chip" data-tooltip="NAME: Virtual Environments&#10;SYNOPSIS: Segmented software environments used to prevent dependency conflicts and deployment drift.">VIRTUAL ENVIRONMENTS</span>
+                  <span class="chip" data-tooltip="NAME: System Diagnostics&#10;SYNOPSIS: Identifying faults, tracing failures, and narrowing down root causes in technical systems.">SYSTEM DIAGNOSTICS</span>
+                  <span class="chip" data-tooltip="NAME: Hardware Troubleshooting&#10;SYNOPSIS: Diagnosing physical system issues and restoring working configurations. ">HARDWARE TROUBLESHOOTING</span>
+                  <span class="chip" data-tooltip="NAME: Custom PC Assembly&#10;SYNOPSIS: Building and validating complete computer systems with an eye for compatibility and reliability.">CUSTOM PC ASSEMBLY</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="window-card" data-window-id="professional-traits">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">professional_traits.json</div>
+              </div>
+              <div class="window-content">
+                <h3>PROFESSIONAL</h3>
+                <div class="chips">
+                  <span class="chip" data-tooltip="NAME: Problem-Solving&#10;SYNOPSIS: Working through technical or operational issues logically until the system is usable again.">PROBLEM-SOLVING</span>
+                  <span class="chip" data-tooltip="NAME: Operational Management&#10;SYNOPSIS: Keeping workflows organized, supplied, and moving correctly day to day.">OPERATIONAL MANAGEMENT</span>
+                  <span class="chip" data-tooltip="NAME: Quality Control&#10;SYNOPSIS: Checking equipment, outputs, or workflows for consistency, function, and correctness.">QUALITY CONTROL</span>
+                  <span class="chip" data-tooltip="NAME: Safety Compliance&#10;SYNOPSIS: Working inside environments where procedures, standards, and risk management matter.">SAFETY COMPLIANCE</span>
+                  <span class="chip" data-tooltip="NAME: Adaptability&#10;SYNOPSIS: Shifting between fast-paced environments, tools, and responsibilities without losing reliability.">ADAPTABILITY</span>
+                  <span class="chip" data-tooltip="NAME: Data Analysis&#10;SYNOPSIS: Pulling together information from multiple sources and making it usable.">DATA ANALYSIS</span>
+                  <span class="chip" data-tooltip="NAME: Documentation Accuracy&#10;SYNOPSIS: Maintaining clean records and reducing errors in high-detail work.">DOCUMENTATION ACCURACY</span>
+                  <span class="chip" data-tooltip="NAME: Workflow Organization&#10;SYNOPSIS: Structuring tasks and systems so the work stays clear, efficient, and repeatable.">WORKFLOW ORGANIZATION</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-tag">PROJECTS</div>
+            <div class="section-copy">
+              <h2>Technical work areas.</h2>
+              <p>Now presented more like a set of app windows instead of a grid of rounded cards.</p>
+            </div>
+          </div>
+
+          <div class="projects-grid window-collection">
+            <div class="window-card" data-window-id="project-one">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">project_01.infra</div>
+              </div>
+              <div class="window-content">
+                <div class="project-meta"><span class="project-num">01</span> / INFRASTRUCTURE</div>
+                <h3>SERVER ARCHITECTURE & DEPLOYMENT</h3>
+                <p class="muted">Designed, configured, and managed self-hosted environments using containerization to improve uptime, resource use, and network organization.</p>
+                <div class="project-tags">
+                  <span>DEPLOYMENT</span>
+                  <span>CONTAINERS</span>
+                  <span>UPTIME</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="window-card" data-window-id="project-two">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">project_02.software</div>
+              </div>
+              <div class="window-content">
+                <div class="project-meta"><span class="project-num">02</span> / SOFTWARE</div>
+                <h3>SOFTWARE DEVELOPMENT & INTEGRATION</h3>
+                <p class="muted">Built custom software modifications and connected APIs with an emphasis on practical logic, systems thinking, and figuring out how moving parts fit together.</p>
+                <div class="project-tags">
+                  <span>APIS</span>
+                  <span>LOGIC</span>
+                  <span>INTEGRATION</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="window-card" data-window-id="project-three">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">project_03.diagnostics</div>
+              </div>
+              <div class="window-content">
+                <div class="project-meta"><span class="project-num">03</span> / DIAGNOSTICS</div>
+                <h3>SYSTEM DIAGNOSTICS & VIRTUALIZATION</h3>
+                <p class="muted">Used troubleshooting and isolated environments to resolve software conflicts and support stable deployment of demanding technical tools.</p>
+                <div class="project-tags">
+                  <span>TROUBLESHOOTING</span>
+                  <span>VIRTUALIZATION</span>
+                  <span>STABILITY</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="experience">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-tag">EXPERIENCE</div>
+            <div class="section-copy">
+              <h2>Reliable work across different environments.</h2>
+              <p>Not every role is a pure engineering role, but they all show responsibility, accuracy, and the ability to handle systems or workflows with real consequences.</p>
+            </div>
+          </div>
+
+          <div class="experience-list window-collection">
+            <div class="window-card" data-window-id="experience-one">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">experience_01.log</div>
+              </div>
+              <div class="window-content experience-body">
+                <div class="meta">2024 — 2025</div>
+                <div>
+                  <h3>MEDICAL RECORDS TECHNICIAN — OGI</h3>
+                  <p class="muted">Edina, MN</p>
+                  <ul>
+                    <li>Managed indexing and electronic storage of critical documentation with strong attention to accuracy.</li>
+                    <li>Resolved discrepancies in patient records and improved reliability of retrieval workflows.</li>
+                    <li>Compiled data from multiple sources into usable records for authorized departments.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="window-card" data-window-id="experience-two">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">experience_02.log</div>
+              </div>
+              <div class="window-content experience-body">
+                <div class="meta">2023 — CURRENT</div>
+                <div>
+                  <h3>OUTDOOR ADVENTURE'S — NDSU WELLNESS CENTER</h3>
+                  <p class="muted">Fargo, ND</p>
+                  <ul>
+                    <li>Trained new staff on safety protocols and risk management standards.</li>
+                    <li>Managed inventory, organization, and quality checks on technical outdoor equipment.</li>
+                    <li>Supported dependable daily operations where preparation and safety mattered.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="window-card" data-window-id="experience-three">
+              <div class="window-bar">
+                <div class="lights">
+                  <button class="light red" data-action="close" aria-label="Close window"></button>
+                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                </div>
+                <div class="window-title">experience_03.log</div>
+              </div>
+              <div class="window-content experience-body">
+                <div class="meta">2021 — 2025</div>
+                <div>
+                  <h3>MEAT CLERK — HY-VEE</h3>
+                  <p class="muted">Plymouth, MN</p>
+                  <ul>
+                    <li>Helped manage daily workflow, inventory needs, and organization.</li>
+                    <li>Prepared customer orders accurately while following strict safety and sanitation standards.</li>
+                    <li>Built strong time management and adaptability in a fast-paced environment.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact">
+        <div class="wrap contact-grid window-collection">
+          <div class="window-card" data-window-id="education-contact">
+            <div class="window-bar">
+              <div class="lights">
+                <button class="light red" data-action="close" aria-label="Close window"></button>
+                <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+              </div>
+              <div class="window-title">education.info</div>
+            </div>
+            <div class="window-content">
+              <div class="section-tag">EDUCATION</div>
+              <h2>B.S. COMPUTER ENGINEERING</h2>
+              <p class="muted">North Dakota State University<br>Fargo, North Dakota</p>
+            </div>
+          </div>
+
+          <div class="window-card" data-window-id="contact-info">
+            <div class="window-bar">
+              <div class="lights">
+                <button class="light red" data-action="close" aria-label="Close window"></button>
+                <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+              </div>
+              <div class="window-title">contact.info</div>
+            </div>
+            <div class="window-content">
+              <div class="section-tag">CONTACT</div>
+              <h2>LET'S TALK</h2>
+              <p class="muted">Open to opportunities involving systems, IT, engineering, and practical technical problem-solving.</p>
+              <div class="contact-links">
+                <a class="contact-link" href="mailto:masongrajczyk@icloud.com">masongrajczyk@icloud.com</a>
+                <a class="contact-link" href="tel:7636883442">(763) 688-3442</a>
+                <a class="contact-link" href="./Mason_Grajczyk_Resume.pdf" target="_blank" rel="noreferrer">OPEN RESUME.PDF</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">MAZON.SYSTEMS — living os resume site</div>
+    </footer>
+  </div>
+
+  <div class="tooltip-panel" id="tooltip-panel"></div>
+
+  <script>
+    const bootOverlay = document.getElementById('boot-overlay');
+    const bootLog = document.getElementById('boot-log');
+    const siteShell = document.getElementById('site-shell');
+    const terminalOutput = document.getElementById('terminal-output');
+    const terminalInput = document.getElementById('terminal-input');
+    const dock = document.getElementById('dock');
+    const windowOverlay = document.getElementById('window-overlay');
+    const tooltipPanel = document.getElementById('tooltip-panel');
+    const statusCpu = document.getElementById('status-cpu');
+    const statusMem = document.getElementById('status-mem');
+    const windows = [...document.querySelectorAll('.window-card')];
+    const heroWindow = document.querySelector('[data-window-id="hero-window"]');
+    let activeTerminalMode = null;
+
+    const bootLines = [
+      '[ OK ] Mounting filesystem...',
+      '[ OK ] Initializing workspace...',
+      '[ OK ] Loading terminal profile...',
+      '[ OK ] Verifying services...',
+      '[ OK ] Starting portfolio daemon...',
+      '[ OK ] Mapping window manager...',
+      '[ OK ] Syncing telemetry...',
+      '[ OK ] Ready.'
+    ];
+
+    function runBootSequence() {
+      const seen = sessionStorage.getItem('living-os-booted');
+      if (seen) {
+        siteShell.classList.remove('boot-hidden');
+        startTerminalHero();
+        return;
+      }
+
+      siteShell.classList.add('boot-hidden');
+      bootOverlay.classList.add('active');
+      let index = 0;
+      const lineInterval = 180;
+      const writer = setInterval(() => {
+        if (index < bootLines.length) {
+          bootLog.textContent += bootLines[index] + '\n';
+          index += 1;
+        }
+      }, lineInterval);
+
+      setTimeout(() => {
+        clearInterval(writer);
+        bootOverlay.classList.add('exit');
+        setTimeout(() => {
+          bootOverlay.classList.remove('active', 'exit');
+          sessionStorage.setItem('living-os-booted', '1');
+          siteShell.classList.remove('boot-hidden');
+          startTerminalHero();
+        }, 420);
+      }, 1800);
+    }
+
+    const heroLines = [
+      '<div class="hero-name">MASON <span>GRAJCZYK</span></div>',
+      '<p class="hero-bio">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>',
+      '<p class="hero-bio">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>',
+      `<div class="hero-badges">
+        <span class="badge">SELF-HOSTED SYSTEMS</span>
+        <span class="badge">CONTAINERIZED DEPLOYMENTS</span>
+        <span class="badge">HARDWARE + SOFTWARE</span>
+      </div>`,
+      `<div class="cta-row">
+        <a class="btn btn-primary" href="./Mason_Grajczyk_Resume.pdf" target="_blank" rel="noreferrer">OPEN RESUME.PDF</a>
+        <a class="btn btn-secondary" href="#projects">VIEW PROJECT INDEX</a>
+      </div>`,
+      `<div class="metrics">
+        <div class="metric"><strong>Systems</strong><span>configuration, deployment, virtualization, and stable environments</span></div>
+        <div class="metric"><strong>Hardware</strong><span>assembly, diagnostics, and troubleshooting when things break</span></div>
+        <div class="metric"><strong>Workflow</strong><span>organized, detail-focused, and steady in structured technical work</span></div>
+      </div>`
+    ];
+
+    function appendTerminalBlock(html) {
+      const block = document.createElement('div');
+      block.className = 'terminal-entry';
+      block.innerHTML = html;
+      terminalOutput.appendChild(block);
+    }
+
+    function appendTerminalText(text, tone = 'muted') {
+      const line = document.createElement('div');
+      line.className = 'terminal-entry';
+      line.textContent = text;
+      if (tone === 'cyan') line.style.color = 'var(--cyan)';
+      if (tone === 'green') line.style.color = 'var(--green)';
+      terminalOutput.appendChild(line);
+    }
+
+
+    function stopTerminalMode() {
+      if (!activeTerminalMode) return;
+      if (activeTerminalMode.interval) clearInterval(activeTerminalMode.interval);
+      if (activeTerminalMode.element?.isConnected) activeTerminalMode.element.remove();
+      activeTerminalMode = null;
+    }
+
+    function createModeBlock(className) {
+      stopTerminalMode();
+      const block = document.createElement('div');
+      block.className = `terminal-entry terminal-mode ${className}`;
+      terminalOutput.appendChild(block);
+      activeTerminalMode = { element: block, interval: null, type: className };
+      return block;
+    }
+
+    function renderFetchProfile() {
+      stopTerminalMode();
+      revealHeroLines();
+    }
+
+    function runHelp() {
+      appendTerminalBlock(`<pre>AVAILABLE COMMANDS
+help             show this command list
+fetch            print the profile block
+./fetch_profile  same as fetch
+clear            clear terminal output
+neofetch         show expanded system card
+ping             simulate localhost ping
+matrix           start matrix rain mode
+bonsai           grow a tiny terminal tree
+aquarium         launch ascii aquarium
+ndsu             print the NDSU ascii mark
+stop             stop active animation mode</pre>`);
+    }
+
+    function runMatrix() {
+      const block = createModeBlock('matrix');
+      const rows = 18;
+      const blockWidth = Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9));
+      const cols = Math.min(120, blockWidth);
+      const chars = '01<>[]{}$#@%&*+xyz';
+      const streams = Array.from({ length: cols }, () => Math.floor(Math.random() * rows));
+      const draw = () => {
+        const grid = Array.from({ length: rows }, () => Array(cols).fill(' '));
+        streams.forEach((head, x, index) => {
+          for (let y = 0; y < 7; y++) {
+            const row = (head - y + rows) % rows;
+            grid[row][x] = chars[Math.floor(Math.random() * chars.length)];
+          }
+          streams[index] = (head + 1) % rows;
+        });
+        block.textContent = grid.map((row) => row.join('')).join('\n');
+      };
+      draw();
+      activeTerminalMode.interval = setInterval(draw, 110);
+    }
+
+    function runBonsai() {
+      const block = createModeBlock('bonsai');
+      const frames = [
+`          &&&
+         &&&&&
+           ||
+          /||\\
+         //||\\
+        ___||___`,
+`           &&
+         &&&&&&
+        &&&&&&&&
+           ||
+          /||\\
+        __/||\\__`,
+`           &&
+         &&&&&&
+       &&&&&&&&&&
+          _||_
+         / || \\
+       _/  ||  \\_`
+      ];
+      let i = 0;
+      block.textContent = frames[0];
+      activeTerminalMode.interval = setInterval(() => {
+        i = (i + 1) % frames.length;
+        block.textContent = frames[i];
+      }, 700);
+    }
+
+    function runAquarium() {
+      const block = createModeBlock('aquarium');
+      const width = Math.min(110, Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9)));
+      const fish = [
+        { x: 2, y: 4, dir: 1, right: '><((*>', left: '<*)))><' },
+        { x: width - 14, y: 10, dir: -1, right: '><{{(°>', left: '<°)}}><' },
+        { x: Math.floor(width / 2), y: 7, dir: 1, right: '><> ', left: ' <><' }
+      ];
+      const seaweed = [8, Math.floor(width * 0.35), Math.floor(width * 0.62), width - 10];
+      const draw = () => {
+        const rows = Array.from({ length: 16 }, () => Array(width).fill(' '));
+        seaweed.forEach((x, idx) => {
+          for (let y = 10; y < 16; y++) {
+            const sway = ((y + idx) % 2);
+            const px = Math.max(0, Math.min(width - 1, x + sway));
+            rows[y][px] = '|';
+          }
+        });
+        fish.forEach((f) => {
+          const art = f.dir === 1 ? f.right : f.left;
+          for (let i = 0; i < art.length; i++) {
+            const x = f.x + i;
+            if (x >= 0 && x < width && f.y >= 0 && f.y < rows.length) rows[f.y][x] = art[i];
+          }
+          f.x += f.dir;
+          if (f.x <= 0 || f.x >= width - art.length) f.dir *= -1;
+          if (Math.random() > 0.76) f.y += Math.random() > 0.5 ? 1 : -1;
+          f.y = Math.max(2, Math.min(12, f.y));
+        });
+        rows[15] = Array(width).fill('~');
+        block.textContent = rows.map((row) => row.join('')).join('\n');
+      };
+      draw();
+      activeTerminalMode.interval = setInterval(draw, 240);
+    }
+
+
+    function runNDSU() {
+      appendTerminalBlock(`<pre>
+
+
+
+
+
+
+
+
+
+          ----++----+##++--- ----
+        --+####################-- ----+--##+-
+        --+########+------+#########---+#########+-
+        --+###----+#####++###############+..-+####+-
+        ------++####+###########################+..-#+--+##+-
+        -#########################################-.+#---+##+-
+        -++++- -++++-++++++++####++###++++++++--++++-+######+++--##+--
+        --####+ +####+#########+-########-####--+####+##-----+###-+##+-
+        -#####-###+--###+-+###-####--##--####--###++###+-------++##+-
+        -+#########--+###--+###--#####+---###+-+###+######+---+--+#-
+        -###+#####---###+--###+---+####+-####--############----####- -+#++-
+        -+###-+####--+###+####++##+-+###++###+-+###+#######--+#+-+##-+##++-#-
+        -####+ +###+-#########--########++-########-########+-++###+---++--.+#-
+        ------ -------------- ------++#####+++++########--#####+- ++-#---+#-
+        --+#################- --++-- -+#--+#+-
+        --##########-###+- -++-
+        -+######+---+-- ----
+        -###+--- -
+        ---</pre>`);
+    }
+
+    function handleCommand(raw) {
+      const command = raw.trim();
+      if (!command) return;
+
+      appendTerminalText(`admin@mazon.systems:~$ ${command}`, 'green');
+
+      if (command === 'clear') {
+        stopTerminalMode();
+        terminalOutput.innerHTML = '';
+        return;
+      }
+
+      if (command === 'help') {
+        runHelp();
+        return;
+      }
+
+      if (command === 'fetch' || command === './fetch_profile') {
+        renderFetchProfile();
+        return;
+      }
+
+      if (command === 'matrix') {
+        runMatrix();
+        return;
+      }
+
+      if (command === 'bonsai') {
+        runBonsai();
+        return;
+      }
+
+      if (command === 'aquarium') {
+        runAquarium();
+        return;
+      }
+
+      if (command === 'ndsu') {
+        runNDSU();
+        return;
+      }
+
+      if (command === 'stop') {
+        stopTerminalMode();
+        appendTerminalText('stopped active terminal mode', 'cyan');
+        return;
+      }
+
+      if (command === 'neofetch') {
+        appendTerminalBlock(`<pre>
+███╗   ███╗   Mason Grajczyk
+████╗ ████║   ─────────────────────────
+██╔████╔██║   role: Computer Engineering student
+██║╚██╔╝██║   focus: systems / deployment / troubleshooting
+██║ ╚═╝ ██║   stack: Java / VHDL / MATLAB / Docker
+╚═╝     ╚═╝   infra: self-hosting / containerization / virtualization
+               school: North Dakota State University
+               location: Wayzata, MN / Fargo, ND
+               status: looking for technical opportunities
+</pre>`);
+        return;
+      }
+
+      if (command === 'ping') {
+        appendTerminalText('64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.034 ms', 'cyan');
+        return;
+      }
+
+      appendTerminalText(`command not found: ${command}`);
+    }
+
+    function applyWindowChrome() {
+      windows.forEach((win) => {
+        if (win === heroWindow) return;
+        const bar = win.querySelector('.window-bar');
+        const lights = bar?.querySelector('.lights');
+        if (!bar || !lights) return;
+        lights.innerHTML = '';
+        const controls = document.createElement('div');
+        controls.className = 'title-controls';
+        controls.innerHTML = `
+          <button class="title-control" data-action="minimize" aria-label="Minimize window">[_]</button>
+          <button class="title-control" data-action="maximize" aria-label="Maximize window">[□]</button>
+          <button class="title-control" data-action="close" aria-label="Close window">[x]</button>
+        `;
+        bar.appendChild(controls);
+      });
+    }
+
+    function updateTooltipPositionForChip(chip) {
+      const chipRect = chip.getBoundingClientRect();
+      const rect = tooltipPanel.getBoundingClientRect();
+      let left = chipRect.left + (chipRect.width / 2) - (rect.width / 2);
+      let top = chipRect.top - rect.height - 14;
+      if (left < 0) left = 10;
+      if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 10;
+      if (top < 10) top = chipRect.bottom + 14;
+      tooltipPanel.style.left = `${left}px`;
+      tooltipPanel.style.top = `${top}px`;
+    }
+
+    function setupTooltips() {
+      document.querySelectorAll('.chip[data-tooltip]').forEach((chip) => {
+        chip.addEventListener('mouseenter', () => {
+          tooltipPanel.textContent = chip.dataset.tooltip;
+          tooltipPanel.classList.add('visible');
+          updateTooltipPositionForChip(chip);
+        });
+        chip.addEventListener('mouseleave', () => {
+          tooltipPanel.classList.remove('visible');
+        });
+      });
+    }
+
+    function startStatusWidget() {
+      let cpu = 12;
+      let mem = 1.2;
+      setInterval(() => {
+        cpu = Math.max(9, Math.min(18, cpu + (Math.random() > 0.5 ? 1 : -1)));
+        mem = Math.max(1.1, Math.min(1.6, +(mem + (Math.random() > 0.5 ? 0.1 : -0.1)).toFixed(1)));
+        statusCpu.textContent = `CPU: ${cpu}%`;
+        statusMem.textContent = `MEM: ${mem.toFixed(1)}GB / 16GB`;
+      }, 1800);
+    }
+
+    function setActiveWindow(win) {
+      windows.forEach((item) => item.classList.toggle('active-window', item === win));
+    }
+
+    function setupWindowFocus() {
+      windows.forEach((win) => {
+        win.addEventListener('mouseenter', () => setActiveWindow(win));
+        win.addEventListener('click', () => setActiveWindow(win));
+      });
+    }
+
+    function revealHeroLines(index = 0) {
+      if (index >= heroLines.length) {
+        terminalInput.disabled = false;
+        terminalInput.focus();
+        return;
+      }
+      appendTerminalBlock(heroLines[index]);
+      setTimeout(() => revealHeroLines(index + 1), 150);
+    }
+
+    function startTerminalHero() {
+      terminalInput.disabled = true;
+      const sequence = './fetch_profile';
+      let typed = '';
+      let i = 0;
+      const typeTimer = setInterval(() => {
+        typed += sequence[i] || '';
+        terminalInput.value = typed;
+        i += 1;
+        if (i > sequence.length - 1) {
+          clearInterval(typeTimer);
+          setTimeout(() => {
+            appendTerminalText(`admin@mazon.systems:~$ ${sequence}`, 'green');
+            terminalInput.value = '';
+            revealHeroLines();
+          }, 180);
+        }
+      }, 45);
+    }
+
+    terminalInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const value = terminalInput.value;
+      terminalInput.value = '';
+      handleCommand(value);
+    });
+
+    function syncDock() {
+      dock.innerHTML = '';
+      windows.forEach((win) => {
+        if (win.classList.contains('hidden') || win.classList.contains('minimized')) {
+          const title = win.querySelector('.window-title')?.textContent?.trim() || 'window';
+          const button = document.createElement('button');
+          button.className = 'dock-item';
+          button.textContent = `restore ${title}`;
+          button.addEventListener('click', () => restoreWindow(win));
+          dock.appendChild(button);
+        }
+      });
+    }
+
+    function restoreWindow(win) {
+      win.classList.remove('hidden', 'minimized');
+      if (win.classList.contains('maximized')) {
+        windowOverlay.classList.add('active');
+      }
+      syncDock();
+    }
+
+    function clearMaximized(except = null) {
+      windows.forEach((win) => {
+        if (win !== except) win.classList.remove('maximized');
+      });
+      const anyMax = windows.some((win) => win.classList.contains('maximized'));
+      windowOverlay.classList.toggle('active', anyMax);
+    }
+
+    function toggleWindowAction(win, action) {
+      if (action === 'maximize') {
+        const willMaximize = !win.classList.contains('maximized');
+        clearMaximized(willMaximize ? win : null);
+        win.classList.toggle('maximized', willMaximize);
+      }
+
+      if (action === 'minimize') {
+        win.classList.remove('hidden');
+        win.classList.toggle('minimized');
+      }
+
+      if (action === 'close') {
+        win.classList.remove('maximized');
+        win.classList.remove('minimized');
+        win.classList.toggle('hidden');
+        clearMaximized();
+      }
+
+      syncDock();
+    }
+
+    document.addEventListener('click', (event) => {
+      const control = event.target.closest('[data-action]');
+      if (!control) return;
+      const win = control.closest('.window-card');
+      if (!win) return;
+      const action = control.dataset.action;
+      toggleWindowAction(win, action);
+    });
+
+    windowOverlay.addEventListener('click', () => {
+      clearMaximized();
+      syncDock();
+    });
+
+    applyWindowChrome();
+    setupTooltips();
+    setupWindowFocus();
+    startStatusWidget();
+    runBootSequence();
+    syncDock();
+  </script>
+</body>
+</html>
