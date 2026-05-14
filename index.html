@@ -290,18 +290,37 @@
 
     .window-card.maximized {
       width: 90vw !important;
-      height: 80vh !important;
+      max-width: 1000px !important;
+      height: 85vh !important;
+      max-height: 85vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
       position: fixed !important;
       inset: 50% auto auto 50% !important;
       transform: translate(-50%, -50%) !important;
       z-index: 1001 !important;
-      display: flex;
-      flex-direction: column;
+    }
+
+    .window-card.maximized .window-bar {
+      flex-shrink: 0 !important;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(10, 16, 24, 0.98);
+    }
+
+    .window-card.maximized .window-content,
+    .window-card.maximized .side-content,
+    .window-card.maximized .hero-grid,
+    .window-card.maximized .portrait-wrap {
+      flex: 1 1 auto !important;
+      overflow-y: auto !important;
+      height: 100%;
+      min-height: 0;
     }
 
     .window-card.maximized .window-content {
-      overflow: auto;
-      flex: 1;
       padding: 3rem;
     }
 
@@ -331,18 +350,11 @@
       font-size: 1rem;
     }
 
-    .window-card.maximized .window-bar {
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(10, 16, 24, 0.98);
-    }
-
-    .window-card.maximized.terminal-hero .hero-grid {
-      flex: 1;
-      overflow-y: auto;
-      height: 100%;
+    .window-card.maximized .portrait-wrap img {
+      max-height: 100%;
+      width: auto;
+      margin: 0 auto;
+      object-fit: contain;
     }
 
     .window-card.minimized .window-content {
@@ -1150,10 +1162,10 @@
       }
 
       .window-card.maximized {
-        width: calc(100vw - 0.4rem) !important;
-        max-width: calc(100vw - 0.4rem) !important;
-        height: calc(100vh - 0.6rem) !important;
-        max-height: calc(100vh - 0.6rem) !important;
+        width: calc(100vw - 0.75rem) !important;
+        max-width: calc(100vw - 0.75rem) !important;
+        height: calc(100vh - 3.75rem) !important;
+        max-height: calc(100vh - 3.75rem) !important;
       }
 
       footer {
