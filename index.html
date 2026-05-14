@@ -1117,8 +1117,8 @@
 
       .terminal-output .hero-name,
       h1 {
-        font-size: clamp(1.8rem, 8vw, 2.8rem);
-        line-height: 0.92;
+        font-size: 1.5rem;
+        line-height: 0.88;
       }
 
       .terminal-output .hero-bio,
@@ -1127,7 +1127,7 @@
       ul,
       li {
         font-size: 10px;
-        line-height: 1.45;
+        line-height: 1.4;
       }
 
       .hero-badges,
@@ -1135,12 +1135,53 @@
       .chips,
       .project-tags,
       .contact-links {
-        gap: 0.3rem;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        gap: 4px;
+      }
+
+      .badge,
+      .btn,
+      .chip,
+      .project-tags span {
+        padding: 4px 6px;
+        font-size: 8px;
+        line-height: 1.1;
+      }
+
+      .status-line,
+      .terminal-prompt,
+      .terminal-input,
+      .terminal-line {
+        font-size: 9px;
+      }
+
+      .terminal-line {
+        flex-wrap: nowrap;
+      }
+
+      .terminal-prompt {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .terminal-input {
+        white-space: nowrap;
+        min-width: 0;
       }
 
       .side-stack {
         grid-template-columns: 1fr;
         gap: 0.4rem;
+      }
+
+      .title-controls,
+      .hero-controls,
+      .title-control {
+        white-space: nowrap;
+        font-size: 9px;
+        gap: 0.25rem;
       }
 
       .nav {
