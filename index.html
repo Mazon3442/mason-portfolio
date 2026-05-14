@@ -636,6 +636,19 @@
     .side-content strong { display: block; margin-bottom: 0.3rem; }
     .label { color: var(--muted); margin-bottom: 0.45rem; }
 
+    .portrait-wrap {
+      padding: 0.8rem;
+    }
+
+    .portrait-wrap img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid rgba(150, 177, 206, 0.14);
+      object-fit: cover;
+      background: rgba(255,255,255,0.02);
+    }
+
     section { padding: 1.1rem 0 0; }
 
     .section-head {
@@ -1000,6 +1013,20 @@
                   <span class="muted"><a class="small-link" href="tel:7636883442">(763) 688-3442</a></span>
                 </div>
               </div>
+
+              <div class="window-card side-pane" data-window-id="portrait-pane">
+                <div class="window-bar">
+                  <div class="lights">
+                    <button class="light red" data-action="close" aria-label="Close window"></button>
+                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
+                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
+                  </div>
+                  <div class="window-title">portrait.jpg</div>
+                </div>
+                <div class="portrait-wrap">
+                  <img src="./NDSU_Fall2025-395.jpg" alt="Portrait of Mason Grajczyk" />
+                </div>
+              </div>
             </aside>
           </div>
         </div>
@@ -1359,7 +1386,7 @@
       siteShell.classList.add('boot-hidden');
       bootOverlay.classList.add('active');
       let index = 0;
-      const lineInterval = 180;
+      const lineInterval = 120;
       const writer = setInterval(() => {
         if (index < bootLines.length) {
           bootLog.textContent += bootLines[index] + '\n';
@@ -1375,8 +1402,8 @@
           sessionStorage.setItem('living-os-booted', '1');
           siteShell.classList.remove('boot-hidden');
           startTerminalHero();
-        }, 420);
-      }, 1800);
+        }, 300);
+      }, 1450);
     }
 
     const heroLines = [
