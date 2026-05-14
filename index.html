@@ -883,24 +883,164 @@
       .hero-main { border-right: 0; border-bottom: 1px solid rgba(150, 177, 206, 0.08); }
     }
 
-    @media (max-width: 720px) {
-      .hero { padding-top: 2rem; }
-      h1, .terminal-output .hero-name { font-size: 3.35rem; }
+    @media (max-width: 820px) {
+      .wrap {
+        width: min(calc(100% - 1rem), var(--max));
+      }
+
+      .nav-inner {
+        padding: 0.8rem 0;
+        gap: 0.7rem;
+      }
+
+      .brand,
+      .nav-links,
+      .nav-right {
+        justify-self: stretch;
+      }
+
+      .brand {
+        justify-content: center;
+      }
+
+      .nav-links {
+        justify-content: center;
+        gap: 0.55rem 0.85rem;
+      }
+
+      .nav-right {
+        display: flex;
+        justify-content: center;
+      }
+
+      .status-widget {
+        width: 100%;
+        max-width: 18rem;
+        min-width: 0;
+        align-items: center;
+      }
+
+      .hero {
+        padding: 1rem 0 1.2rem;
+      }
+
       .hero-main,
       .hero-side,
       .window-content,
       .side-content,
-      .metric { padding: 1rem; }
-      .window-bar { flex-direction: column; align-items: start; }
+      .metric,
+      .portrait-wrap {
+        padding: 0.95rem;
+      }
+
+      .terminal-shell {
+        padding: 14px;
+      }
+
+      .terminal-output {
+        min-height: 11rem;
+        font-size: 0.84rem;
+      }
+
+      .terminal-output .hero-name {
+        font-size: clamp(2.7rem, 13vw, 4.8rem);
+      }
+
+      .hero-badges,
+      .cta-row,
+      .chips,
+      .project-tags,
+      .contact-links {
+        gap: 0.5rem;
+      }
+
+      .badge,
+      .chip,
+      .project-tags span,
+      .contact-link,
+      .btn {
+        font-size: 0.74rem;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .side-stack {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .projects-grid,
+      .content-grid,
+      .contact-grid,
+      .experience-list {
+        gap: 0.8rem;
+      }
+
+      footer {
+        padding-bottom: 5rem;
+      }
+    }
+
+    @media (max-width: 720px) {
+      h1, .terminal-output .hero-name { font-size: 3.2rem; }
       .dock {
         left: 0.75rem;
         right: 0.75rem;
         transform: none;
-        bottom: 2.4rem;
+        bottom: 1rem;
+        justify-content: flex-start;
+        overflow-x: auto;
+        flex-wrap: nowrap;
       }
       .window-card.maximized {
         width: calc(100vw - 1rem) !important;
         height: calc(100vh - 2rem) !important;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .brand {
+        justify-content: flex-start;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+      }
+
+      .status-widget {
+        align-items: flex-start;
+      }
+
+      .side-stack {
+        grid-template-columns: 1fr;
+      }
+
+      .terminal-line {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+
+      .terminal-input {
+        width: 100%;
+      }
+
+      .window-bar {
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .window-title {
+        max-width: 100%;
+      }
+
+      .title-controls {
+        margin-left: 0;
+      }
+
+      .terminal-output .hero-name {
+        font-size: clamp(2.45rem, 14vw, 4rem);
       }
     }
   </style>
