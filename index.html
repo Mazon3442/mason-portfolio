@@ -302,6 +302,47 @@
     .window-card.maximized .window-content {
       overflow: auto;
       flex: 1;
+      padding: 3rem;
+    }
+
+    .window-card.maximized .window-content h3 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .window-card.maximized .window-content p,
+    .window-card.maximized .window-content ul,
+    .window-card.maximized .window-content li {
+      font-size: 1.25rem;
+      line-height: 1.8;
+    }
+
+    .window-card.maximized .chip,
+    .window-card.maximized .project-tags span {
+      font-size: 1rem;
+      padding: 0.8rem 1.2rem;
+    }
+
+    .window-card.maximized .experience-body {
+      gap: 2rem;
+    }
+
+    .window-card.maximized .meta {
+      font-size: 1rem;
+    }
+
+    .window-card.maximized .window-bar {
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(10, 16, 24, 0.98);
+    }
+
+    .window-card.maximized.terminal-hero .hero-grid {
+      flex: 1;
+      overflow-y: auto;
+      height: 100%;
     }
 
     .window-card.minimized .window-content {
