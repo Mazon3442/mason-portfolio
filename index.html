@@ -1003,7 +1003,7 @@
       }
 
       .metrics {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: 1fr;
         gap: 0.3rem;
       }
 
@@ -1012,13 +1012,15 @@
       }
 
       .metric strong {
-        font-size: 0.88rem;
+        font-size: 12px;
         margin-bottom: 0.18rem;
       }
 
       .metric span {
-        font-size: 8px;
-        line-height: 1.2;
+        font-size: 10px;
+        line-height: 1.4;
+        word-wrap: normal;
+        overflow-wrap: normal;
       }
 
       .title-controls,
@@ -1038,6 +1040,13 @@
         gap: 0.35rem;
       }
 
+      .nav-inner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+
       .brand,
       .nav-links,
       .nav-right {
@@ -1050,9 +1059,18 @@
       }
 
       .nav-links {
-        justify-content: flex-start;
-        gap: 0.3rem 0.55rem;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+        margin-top: 0.5rem;
         padding-inline: 0.3rem;
+      }
+
+      .nav-links a {
+        font-size: 9px;
       }
 
       .nav-right {
