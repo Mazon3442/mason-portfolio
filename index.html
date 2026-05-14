@@ -296,9 +296,12 @@
       position: fixed !important;
       left: 50% !important;
       top: 50% !important;
+      right: auto !important;
+      bottom: auto !important;
+      margin: 0 !important;
       inset: auto !important;
       transform: translate(-50%, -50%) !important;
-      z-index: 1001 !important;
+      z-index: 2001 !important;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1565,6 +1568,7 @@
     const statusMem = document.getElementById('status-mem');
     const windows = [...document.querySelectorAll('.window-card')];
     const heroWindow = document.querySelector('[data-window-id="hero-window"]');
+    const maximizedPlaceholders = new Map();
     let activeTerminalMode = null;
 
     const bootLines = [
@@ -1995,6 +1999,24 @@ stop             stop active animation mode</pre>`);
       windowOverlay.classList.toggle('active', anyMax);
     }
 
+    function moveWindowToTopLayer(win) {
+      if (maximizedPlaceholders.has(win)) return;
+      const placeholder = document.createElement('div');
+      placeholder.dataset.windowPlaceholder = win.dataset.windowId || 'window';
+      placeholder.style.display = 'none';
+      win.parentNode.insertBefore(placeholder, win);
+      maximizedPlaceholders.set(win, placeholder);
+      document.body.appendChild(win);
+    }
+
+    function restoreWindowPlacement(win) {
+      const placeholder = maximizedPlaceholders.get(win);
+      if (!placeholder) return;
+      placeholder.parentNode.insertBefore(win, placeholder);
+      placeholder.remove();
+      maximizedPlaceholders.delete(win);
+    }
+
     function restoreWindow(win) {
       win.classList.remove('hidden', 'minimized');
       setActiveWindow(win);
@@ -2004,7 +2026,11 @@ stop             stop active animation mode</pre>`);
 
     function clearMaximized(except = null) {
       windows.forEach((win) => {
-        if (win !== except) win.classList.remove('maximized');
+        if (win === except) return;
+        if (win.classList.contains('maximized')) {
+          win.classList.remove('maximized');
+          restoreWindowPlacement(win);
+        }
       });
       refreshOverlay();
     }
@@ -2014,7 +2040,13 @@ stop             stop active animation mode</pre>`);
         const willMaximize = !win.classList.contains('maximized');
         win.classList.remove('hidden', 'minimized');
         clearMaximized(willMaximize ? win : null);
-        win.classList.toggle('maximized', willMaximize);
+        if (willMaximize) {
+          moveWindowToTopLayer(win);
+          win.classList.add('maximized');
+        } else {
+          win.classList.remove('maximized');
+          restoreWindowPlacement(win);
+        }
         refreshOverlay();
         setActiveWindow(win);
         syncDock();
@@ -2024,7 +2056,10 @@ stop             stop active animation mode</pre>`);
       if (action === 'minimize') {
         const willMinimize = !win.classList.contains('minimized');
         win.classList.remove('hidden');
-        win.classList.remove('maximized');
+        if (win.classList.contains('maximized')) {
+          win.classList.remove('maximized');
+          restoreWindowPlacement(win);
+        }
         win.classList.toggle('minimized', willMinimize);
         refreshOverlay();
         syncDock();
@@ -2033,7 +2068,11 @@ stop             stop active animation mode</pre>`);
 
       if (action === 'close') {
         const willHide = !win.classList.contains('hidden');
-        win.classList.remove('maximized', 'minimized');
+        if (win.classList.contains('maximized')) {
+          win.classList.remove('maximized');
+          restoreWindowPlacement(win);
+        }
+        win.classList.remove('minimized');
         win.classList.toggle('hidden', willHide);
         refreshOverlay();
         syncDock();
