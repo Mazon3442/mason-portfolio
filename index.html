@@ -10,26 +10,28 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #0a0c0e;
-      --ink-2: #101317;
-      --panel: #15181c;
-      --panel-2: #1b1f24;
-      --line: #262b31;
-      --line-bright: #3a4149;
-      --paper: #ece8de;
-      --paper-dim: #cfccc2;
-      --muted: #8b9099;
-      --signal: #ff6a2e;
-      --signal-dim: #c9531f;
-      --signal-soft: rgba(255, 106, 46, 0.14);
-      --ok: #6fe7b3;
-      --ok-soft: rgba(111, 231, 179, 0.14);
-      --warn: #ffc857;
+      --ink: #05070a;
+      --ink-2: #0a0e13;
+      --panel: #12161c;
+      --panel-2: #171c23;
+      --line: #262c34;
+      --line-bright: #3c4550;
+      --paper: #eef1f6;
+      --paper-dim: #c6cdda;
+      --muted: #838da0;
+      --accent: #ff2e9a;
+      --accent-dim: #c21f74;
+      --accent-soft: rgba(255, 46, 154, 0.14);
+      --term: #39ff88;
+      --term-dim: #1fae5c;
+      --term-soft: rgba(57, 255, 136, 0.14);
+      --ok: #4cf3ff;
+      --ok-soft: rgba(76, 243, 255, 0.14);
+      --warn: #ffce4a;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
       --sans: "IBM Plex Sans", system-ui, sans-serif;
       --max: 1180px;
       --rail-w: 64px;
-      --radius: 2px;
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -62,6 +64,15 @@
       background-size: 34px 34px;
     }
 
+    #bgFx {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+      mix-blend-mode: screen;
+    }
+
     a { color: inherit; text-decoration: none; }
     ul { margin: 0; padding: 0; list-style: none; }
     button { font: inherit; }
@@ -69,12 +80,12 @@
     .wrap { width: min(calc(100% - 2.4rem), var(--max)); margin: 0 auto; position: relative; z-index: 1; }
 
     :focus-visible {
-      outline: 2px solid var(--signal);
+      outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
 
     /* ---------- shared type ---------- */
-    .eyebrow, .led-label, .nameplate-tag, .rail-num, .runit-label, .brand, .toplinks, .topmeta, .chip, .btn, .telemetry dt, .telemetry dd, .badge, .project-tags span, .meta {
+    .eyebrow, .rail-num, .runit-label, .brand, .toplinks, .topmeta, .chip, .btn, .telemetry dt, .telemetry dd, .badge, .project-tags span, .meta {
       font-family: var(--mono);
       letter-spacing: 0.06em;
     }
@@ -82,7 +93,7 @@
     .eyebrow {
       text-transform: uppercase;
       font-size: 0.72rem;
-      color: var(--signal);
+      color: var(--accent);
       display: flex;
       align-items: center;
       gap: 0.55rem;
@@ -93,7 +104,7 @@
       content: "";
       width: 18px;
       height: 1px;
-      background: var(--signal);
+      background: var(--accent);
     }
 
     h1, h2, h3 { margin: 0; font-family: var(--mono); font-weight: 700; }
@@ -112,8 +123,9 @@
       box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.02);
     }
 
-    .led--signal { background: var(--signal); box-shadow: 0 0 8px rgba(255, 106, 46, 0.7); }
-    .led--ok { background: var(--ok); box-shadow: 0 0 8px rgba(111, 231, 179, 0.6); }
+    .led--accent { background: var(--accent); box-shadow: 0 0 8px rgba(255, 46, 154, 0.7); }
+    .led--ok { background: var(--ok); box-shadow: 0 0 8px rgba(76, 243, 255, 0.6); }
+    .led--term { background: var(--term); box-shadow: 0 0 8px rgba(57, 255, 136, 0.6); }
 
     @keyframes ledPulse {
       0%, 100% { opacity: 1; }
@@ -128,7 +140,7 @@
       inset: 0;
       z-index: 9999;
       background: var(--ink);
-      color: var(--ok);
+      color: var(--term);
       font-family: var(--mono);
       display: flex;
       align-items: center;
@@ -146,6 +158,7 @@
       line-height: 1.8;
       min-height: 9rem;
       margin: 0 0 1rem;
+      text-shadow: 0 0 6px rgba(57, 255, 136, 0.5);
     }
 
     .boot-meter {
@@ -157,7 +170,7 @@
     .boot-meter-fill {
       height: 100%;
       width: 100%;
-      background: var(--signal);
+      background: var(--term);
       transform: scaleX(0);
       transform-origin: left;
     }
@@ -186,7 +199,7 @@
       display: grid;
       place-items: center;
       border: 1px solid var(--line-bright);
-      color: var(--signal);
+      color: var(--accent);
       font-family: var(--mono);
       font-weight: 700;
       font-size: 0.85rem;
@@ -206,7 +219,7 @@
     .rail-bus-fill {
       position: absolute;
       top: 0; left: 0; right: 0;
-      background: var(--signal);
+      background: var(--accent);
       transform: scaleY(0);
       transform-origin: top;
       height: 100%;
@@ -235,8 +248,8 @@
 
     .rail-slot:hover { color: var(--paper); }
 
-    .rail-slot.is-active { color: var(--signal); }
-    .rail-slot.is-active .led { background: var(--signal); box-shadow: 0 0 8px rgba(255, 106, 46, 0.7); }
+    .rail-slot.is-active { color: var(--accent); }
+    .rail-slot.is-active .led { background: var(--accent); box-shadow: 0 0 8px rgba(255, 46, 154, 0.7); }
 
     .rail-slot .rail-tip {
       position: absolute;
@@ -277,7 +290,7 @@
       position: sticky;
       top: 0;
       z-index: 400;
-      background: rgba(10, 12, 14, 0.86);
+      background: rgba(5, 7, 10, 0.86);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--line);
       margin-left: var(--rail-w);
@@ -315,7 +328,7 @@
     .toplinks a { position: relative; padding: 0.15rem 0; }
     .toplinks a::before { content: "["; opacity: 0; transition: opacity 150ms ease; margin-right: 2px; }
     .toplinks a::after { content: "]"; opacity: 0; transition: opacity 150ms ease; margin-left: 2px; }
-    .toplinks a:hover { color: var(--signal); }
+    .toplinks a:hover { color: var(--accent); }
     .toplinks a:hover::before, .toplinks a:hover::after { opacity: 1; }
 
     .topmeta {
@@ -365,7 +378,7 @@
 
     .topbar-progress-fill {
       height: 100%;
-      background: var(--signal);
+      background: var(--accent);
       width: 0%;
     }
 
@@ -461,7 +474,7 @@
       padding: 0;
     }
 
-    .runit-controls button:hover { color: var(--signal); }
+    .runit-controls button:hover { color: var(--accent); }
 
     .runit h3 {
       font-size: 1.1rem;
@@ -486,7 +499,7 @@
     .runit-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(5, 6, 8, 0.7);
+      background: rgba(2, 3, 5, 0.72);
       backdrop-filter: blur(3px);
       z-index: 1900;
       opacity: 0;
@@ -508,27 +521,189 @@
       .hero-grid { grid-template-columns: 1fr; }
     }
 
-    .nameplate {
-      font-size: clamp(3rem, 8vw, 5.6rem);
-      line-height: 0.92;
+    .hero-main { padding: 0; overflow: hidden; }
+    .hero-main .runit-label { padding: 1.2rem 1.5rem 0; margin-bottom: 0.9rem; }
+
+    /* ---------- CRT terminal ---------- */
+    .terminal-shell {
+      position: relative;
+      min-height: 30rem;
+      background: #010403;
+      padding: 0 1.5rem 1.5rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .terminal-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.18) 0px,
+        rgba(0, 0, 0, 0.18) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      mix-blend-mode: multiply;
+    }
+
+    .terminal-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.85), inset 0 0 20px rgba(57, 255, 136, 0.06);
+    }
+
+    @keyframes crtFlicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.94; }
+      94% { opacity: 1; }
+    }
+
+    .terminal-shell { animation: crtFlicker 5s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .terminal-shell { animation: none; }
+      .terminal-shell::before { display: none; }
+    }
+
+    .terminal-output {
+      flex: 1;
+      min-height: 22rem;
+      white-space: pre-wrap;
+      color: var(--term);
+      line-height: 1.7;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      text-shadow: 0 0 5px rgba(57, 255, 136, 0.35);
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-entry {
+      width: 100%;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: termFadeIn 260ms ease forwards;
+    }
+
+    @keyframes termFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-name {
+      position: relative;
+      display: inline-block;
+      font-family: var(--mono);
+      color: var(--paper);
+      font-size: clamp(2.6rem, 7vw, 4.8rem);
+      line-height: 0.95;
       letter-spacing: -0.03em;
       text-transform: uppercase;
-      margin-bottom: 1.1rem;
+      margin: 0.4rem 0 1rem;
     }
 
-    .nameplate span { color: var(--signal); display: block; }
+    .hero-name .line { display: block; }
+    .hero-name .line.two { color: var(--accent); }
 
-    .hero-role {
-      font-family: var(--mono);
+    .hero-name[data-glitch]::before,
+    .hero-name[data-glitch]::after {
+      content: attr(data-glitch);
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      white-space: pre;
+    }
+
+    .hero-name[data-glitch]:hover::before {
+      color: var(--accent);
+      opacity: 0.8;
+      transform: translate(2px, -1px);
+      mix-blend-mode: screen;
+      animation: glitchA 0.5s steps(2, end) infinite;
+    }
+
+    .hero-name[data-glitch]:hover::after {
+      color: var(--ok);
+      opacity: 0.8;
+      transform: translate(-2px, 1px);
+      mix-blend-mode: screen;
+      animation: glitchB 0.4s steps(2, end) infinite;
+    }
+
+    @keyframes glitchA {
+      0% { clip-path: inset(10% 0 70% 0); }
+      50% { clip-path: inset(60% 0 5% 0); }
+      100% { clip-path: inset(30% 0 40% 0); }
+    }
+
+    @keyframes glitchB {
+      0% { clip-path: inset(70% 0 5% 0); }
+      50% { clip-path: inset(15% 0 65% 0); }
+      100% { clip-path: inset(45% 0 20% 0); }
+    }
+
+    .terminal-output .hero-bio {
+      max-width: 44rem;
       color: var(--muted);
-      font-size: 0.82rem;
-      letter-spacing: 0.04em;
-      margin-bottom: 1.3rem;
+      font-family: var(--sans);
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+      text-shadow: none;
     }
 
-    .hero-bio {
-      max-width: 40rem;
-      font-size: 1rem;
+    .terminal-mode {
+      width: 100%;
+      margin: 0 0 1rem;
+      padding: 0.85rem 0.9rem;
+      border: 1px solid var(--line-bright);
+      background: rgba(57, 255, 136, 0.03);
+      color: var(--term);
+      font-family: var(--mono);
+      font-size: clamp(0.72rem, 1vw, 0.85rem);
+      line-height: 1.45;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .terminal-mode.bonsai { color: #b8f7c1; }
+    .terminal-mode.aquarium { color: var(--ok); min-height: 12rem; }
+    .terminal-mode.matrix { min-height: 12rem; }
+
+    .terminal-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: auto;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--line);
+      width: 100%;
+      font-family: var(--mono);
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-prompt { color: var(--ok); flex: 0 0 auto; font-size: 0.86rem; }
+
+    .terminal-input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--term);
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      text-shadow: 0 0 5px rgba(57, 255, 136, 0.35);
     }
 
     .hero-badges {
@@ -546,7 +721,7 @@
       text-transform: uppercase;
     }
 
-    .cta-row { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.2rem; }
 
     .btn {
       display: inline-flex;
@@ -564,9 +739,9 @@
 
     .btn:hover { transform: translateY(-2px); }
 
-    .btn-signal {
-      background: var(--signal);
-      color: var(--ink);
+    .btn-accent {
+      background: var(--accent);
+      color: #16020f;
       font-weight: 700;
     }
 
@@ -576,7 +751,34 @@
       background: rgba(255, 255, 255, 0.02);
     }
 
-    .btn-outline:hover { border-color: var(--signal); color: var(--signal); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.9rem;
+      margin-top: 0.2rem;
+    }
+
+    .metric {
+      border: 1px solid var(--line-bright);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.8rem 0.9rem;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-family: var(--mono);
+    }
+
+    .metric span { color: var(--muted); font-size: 0.78rem; font-family: var(--sans); text-shadow: none; }
+
+    @media (max-width: 640px) {
+      .metrics { grid-template-columns: 1fr; }
+    }
 
     .hero-side { display: grid; gap: 1.1rem; }
 
@@ -628,7 +830,7 @@
       transition: border-color 160ms ease, color 160ms ease;
     }
 
-    .chip:hover { border-color: var(--signal); color: var(--signal); }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
 
     .tooltip-panel {
       position: fixed;
@@ -668,7 +870,7 @@
       color: var(--muted);
     }
 
-    .meta { font-size: 0.68rem; color: var(--signal); margin-bottom: 0.8rem; display: block; }
+    .meta { font-size: 0.68rem; color: var(--accent); margin-bottom: 0.8rem; display: block; }
 
     /* ---------- experience ---------- */
     .experience-list { display: grid; gap: 1.1rem; }
@@ -698,66 +900,7 @@
       transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
     }
 
-    .contact-link:hover { border-color: var(--signal); color: var(--signal); transform: translateX(4px); }
-
-    /* ---------- diagnostics console ---------- */
-    .diagnostics {
-      margin-top: 1.1rem;
-    }
-
-    .diag-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: none;
-      border: 1px dashed var(--line-bright);
-      color: var(--muted);
-      padding: 0.75rem 1rem;
-      width: 100%;
-      cursor: pointer;
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      transition: border-color 160ms ease, color 160ms ease;
-    }
-
-    .diag-toggle:hover { border-color: var(--signal); color: var(--signal); }
-
-    .diag-body {
-      display: none;
-      border: 1px solid var(--line-bright);
-      border-top: none;
-      background: var(--ink-2);
-      padding: 1rem;
-    }
-
-    .diag-body.open { display: block; }
-
-    .diag-output {
-      white-space: pre-wrap;
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      line-height: 1.65;
-      max-height: 16rem;
-      overflow-y: auto;
-      margin-bottom: 0.7rem;
-    }
-
-    .diag-output .diag-green { color: var(--ok); }
-    .diag-output .diag-signal { color: var(--signal); }
-
-    .diag-line { display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--line); padding-top: 0.7rem; }
-    .diag-prompt { color: var(--ok); font-family: var(--mono); font-size: 0.78rem; }
-    .diag-input {
-      flex: 1;
-      background: none;
-      border: 0;
-      outline: 0;
-      color: var(--paper);
-      font-family: var(--mono);
-      font-size: 0.78rem;
-    }
+    .contact-link:hover { border-color: var(--accent); color: var(--accent); transform: translateX(4px); }
 
     /* ---------- dock ---------- */
     .dock {
@@ -773,7 +916,7 @@
       max-width: min(90vw, 700px);
       padding: 0.5rem;
       border: 1px solid var(--line-bright);
-      background: rgba(21, 24, 28, 0.9);
+      background: rgba(18, 22, 28, 0.9);
       backdrop-filter: blur(12px);
     }
 
@@ -782,14 +925,14 @@
     .dock-item {
       border: 1px solid var(--line-bright);
       background: rgba(255, 255, 255, 0.03);
-      color: var(--signal);
+      color: var(--accent);
       padding: 0.5rem 0.7rem;
       font-family: var(--mono);
       font-size: 0.68rem;
       cursor: pointer;
     }
 
-    .dock-item:hover { background: var(--signal-soft); }
+    .dock-item:hover { background: var(--accent-soft); }
 
     /* ---------- footer ---------- */
     footer {
@@ -814,10 +957,18 @@
     @media (prefers-reduced-motion: reduce) {
       .runit { opacity: 1 !important; transform: none !important; }
       #boot { display: none !important; }
+      #bgFx { display: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .terminal-shell { min-height: 24rem; }
+      .terminal-output { min-height: 16rem; }
     }
   </style>
 </head>
 <body class="boot-active">
+
+  <canvas id="bgFx"></canvas>
 
   <div id="boot">
     <div class="boot-panel">
@@ -845,7 +996,7 @@
 
   <header class="topbar">
     <div class="wrap topbar-inner">
-      <a href="#top" class="brand"><span class="led led--signal led--pulse"></span>MAZON.SYSTEMS</a>
+      <a href="#top" class="brand"><span class="led led--accent led--pulse"></span>MAZON.SYSTEMS</a>
       <nav class="toplinks">
         <a href="#about">ABOUT</a>
         <a href="#stack">STACK</a>
@@ -864,27 +1015,21 @@
   <main id="top">
     <section class="hero" id="hero">
       <div class="wrap hero-grid">
-        <div class="runit hero-main" data-runit data-boot-side="left">
-          <div class="runit-label"><span class="led led--signal led--pulse"></span>CHASSIS_HEAD / MASON.SYS
+        <div class="runit hero-main" data-runit>
+          <div class="runit-label"><span class="led led--term led--pulse"></span>CHASSIS_HEAD / MASON.SYS
             <span class="runit-controls"><button data-action="minimize" aria-label="Minimize">_</button><button data-action="maximize" aria-label="Maximize">□</button><button data-action="close" aria-label="Close">x</button></span>
           </div>
-          <h1 class="nameplate">MASON<span>GRAJCZYK</span></h1>
-          <p class="hero-role">// SYSTEMS ENGINEERING &middot; SELF-HOSTED INFRASTRUCTURE &middot; DIAGNOSTICS</p>
-          <p class="hero-bio">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>
-          <p class="hero-bio">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>
-          <div class="hero-badges">
-            <span class="badge">SELF-HOSTED SYSTEMS</span>
-            <span class="badge">CONTAINERIZED DEPLOYMENTS</span>
-            <span class="badge">HARDWARE + SOFTWARE</span>
-          </div>
-          <div class="cta-row">
-            <a class="btn btn-signal" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
-            <a class="btn btn-outline" href="#projects">View Project Log</a>
+          <div class="terminal-shell">
+            <div class="terminal-output" id="terminalOutput"></div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">mason@rack:~$</span>
+              <input id="terminalInput" class="terminal-input" type="text" spellcheck="false" autocomplete="off" aria-label="Terminal command input" />
+            </div>
           </div>
         </div>
 
         <aside class="hero-side">
-          <div class="runit" data-runit data-boot-side="right">
+          <div class="runit" data-runit>
             <div class="runit-label"><span class="led led--ok"></span>TELEMETRY</div>
             <dl class="telemetry-grid telemetry">
               <div><dt>Status</dt><dd>Online</dd></div>
@@ -895,8 +1040,8 @@
               <div><dt>Build</dt><dd>2026.07</dd></div>
             </dl>
           </div>
-          <div class="runit" data-runit data-boot-side="right">
-            <div class="runit-label"><span class="led led--signal"></span>BAY_01 / PORTRAIT</div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led led--accent"></span>BAY_01 / PORTRAIT</div>
             <div class="bay-frame"><img src="./NDSU_Fall2025-395.jpg" alt="Portrait of Mason Grajczyk" /></div>
           </div>
         </aside>
@@ -1088,16 +1233,7 @@
               <a class="contact-link" href="tel:7636883442">(763) 688-3442</a>
               <a class="contact-link" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
             </div>
-            <div class="diagnostics">
-              <button class="diag-toggle" id="diagToggle"><span class="led led--ok"></span> Run diagnostics.sh</button>
-              <div class="diag-body" id="diagBody">
-                <div class="diag-output" id="diagOutput"></div>
-                <div class="diag-line">
-                  <span class="diag-prompt">mason@rack:~$</span>
-                  <input class="diag-input" id="diagInput" type="text" spellcheck="false" autocomplete="off" aria-label="Diagnostics command input" />
-                </div>
-              </div>
-            </div>
+            <p style="margin-top:1rem;font-size:0.76rem;">Psst — the terminal up top is live. Try <span style="color:var(--term);font-family:var(--mono)">help</span>.</p>
           </div>
         </div>
       </div>
@@ -1122,12 +1258,49 @@
     const bootLog = document.getElementById('bootLog');
     const bootFill = document.getElementById('bootFill');
     const runits = [...document.querySelectorAll('[data-runit]')];
-    const railSlots = [...document.querySelectorAll('.rail-slot')];
     const railBusFill = document.getElementById('railBusFill');
     const topProgressFill = document.getElementById('topProgressFill');
     const dock = document.getElementById('dock');
     const runitOverlay = document.getElementById('runitOverlay');
     const tooltipPanel = document.getElementById('tooltipPanel');
+    const terminalOutput = document.getElementById('terminalOutput');
+    const terminalInput = document.getElementById('terminalInput');
+    let activeTerminalMode = null;
+
+    /* ---------- ambient bg canvas (matrix rain) ---------- */
+    (function bgFx() {
+      const canvas = document.getElementById('bgFx');
+      if (reduceMotion) { canvas.remove(); return; }
+      const ctx = canvas.getContext('2d');
+      let w, h, cols, drops;
+      const glyphs = '01<>[]{}#@%&/\\';
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        cols = Math.floor(w / 22);
+        drops = Array.from({ length: cols }, () => Math.random() * -50);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function draw() {
+        ctx.fillStyle = 'rgba(5,7,10,0.14)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.font = '15px "IBM Plex Mono", monospace';
+        for (let i = 0; i < cols; i++) {
+          const text = glyphs[Math.floor(Math.random() * glyphs.length)];
+          const x = i * 22;
+          const y = drops[i] * 22;
+          ctx.fillStyle = 'rgba(57,255,136,0.55)';
+          ctx.fillText(text, x, y);
+          if (y > h && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    })();
 
     /* ---------- boot sequence ---------- */
     const bootLines = [
@@ -1172,6 +1345,7 @@
       }
       setupScrollReveals();
       setupRailTracking();
+      startTerminalHero();
     }
 
     function setupScrollReveals() {
@@ -1303,93 +1477,276 @@
 
     runitOverlay.addEventListener('click', () => { clearMaximized(); syncDock(); });
 
-    /* ---------- diagnostics console ---------- */
-    const diagToggle = document.getElementById('diagToggle');
-    const diagBody = document.getElementById('diagBody');
-    const diagOutput = document.getElementById('diagOutput');
-    const diagInput = document.getElementById('diagInput');
-    let diagMode = null;
+    /* ---------- hero terminal (the fun part) ---------- */
+    const heroLines = [
+      '<span class="hero-name" data-glitch="MASON&#10;GRAJCZYK"><span class="line">MASON</span><span class="line two">GRAJCZYK</span></span>',
+      '<p class="hero-bio">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>',
+      '<p class="hero-bio">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>',
+      `<div class="hero-badges">
+        <span class="badge">SELF-HOSTED SYSTEMS</span>
+        <span class="badge">CONTAINERIZED DEPLOYMENTS</span>
+        <span class="badge">HARDWARE + SOFTWARE</span>
+      </div>`,
+      `<div class="cta-row">
+        <a class="btn btn-accent" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
+        <a class="btn btn-outline" href="#projects">View Project Log</a>
+      </div>`,
+      `<div class="metrics">
+        <div class="metric"><strong>Systems</strong><span>configuration, deployment, virtualization, stable environments</span></div>
+        <div class="metric"><strong>Hardware</strong><span>assembly, diagnostics, troubleshooting when things break</span></div>
+        <div class="metric"><strong>Workflow</strong><span>organized, detail-focused, steady in structured technical work</span></div>
+      </div>`
+    ];
 
-    diagToggle.addEventListener('click', () => {
-      diagBody.classList.toggle('open');
-      if (diagBody.classList.contains('open')) {
-        if (!diagOutput.textContent) {
-          diagOutput.innerHTML = 'diagnostics console ready. type <span class="diag-green">help</span> for commands.\n';
-        }
-        diagInput.focus();
+    function appendTerminalBlock(html) {
+      const block = document.createElement('div');
+      block.className = 'terminal-entry';
+      block.innerHTML = html;
+      terminalOutput.appendChild(block);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function appendTerminalText(text, tone) {
+      const line = document.createElement('div');
+      line.className = 'terminal-entry';
+      line.textContent = text;
+      if (tone === 'ok') line.style.color = 'var(--ok)';
+      if (tone === 'accent') line.style.color = 'var(--accent)';
+      terminalOutput.appendChild(line);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function stopTerminalMode() {
+      if (!activeTerminalMode) return;
+      if (activeTerminalMode.interval) clearInterval(activeTerminalMode.interval);
+      if (activeTerminalMode.element?.isConnected) activeTerminalMode.element.remove();
+      activeTerminalMode = null;
+    }
+
+    function createModeBlock(className) {
+      stopTerminalMode();
+      const block = document.createElement('div');
+      block.className = `terminal-entry terminal-mode ${className}`;
+      terminalOutput.appendChild(block);
+      activeTerminalMode = { element: block, interval: null, type: className };
+      return block;
+    }
+
+    function revealHeroLines(index = 0) {
+      if (index >= heroLines.length) {
+        terminalInput.disabled = false;
+        return;
       }
-    });
-
-    function diagPrint(text, cls) {
-      const span = document.createElement('div');
-      if (cls) span.className = cls;
-      span.textContent = text;
-      diagOutput.appendChild(span);
-      diagOutput.scrollTop = diagOutput.scrollHeight;
+      appendTerminalBlock(heroLines[index]);
+      setTimeout(() => revealHeroLines(index + 1), reduceMotion ? 0 : 150);
     }
 
-    function stopDiagMode() {
-      if (!diagMode) return;
-      clearInterval(diagMode.interval);
-      diagMode.el.remove();
-      diagMode = null;
+    function renderFetchProfile() {
+      stopTerminalMode();
+      revealHeroLines();
     }
 
-    function startDiagMode() {
-      stopDiagMode();
-      const el = document.createElement('div');
-      el.className = 'diag-signal';
-      diagOutput.appendChild(el);
-      diagMode = { el, interval: null };
-      return el;
+    function runHelp() {
+      appendTerminalBlock(`<pre style="margin:0;color:var(--term);">AVAILABLE COMMANDS
+help             show this command list
+fetch            print the profile block
+./fetch_profile  same as fetch
+clear            clear terminal output
+neofetch         show expanded system card
+ping             simulate localhost ping
+matrix           start matrix rain mode
+bonsai           grow a tiny terminal tree
+aquarium         launch ascii aquarium
+ndsu             print the NDSU ascii mark
+stop             stop active animation mode</pre>`);
     }
 
     function runMatrix() {
-      const el = startDiagMode();
-      const cols = 48, rows = 8;
-      const chars = '01<>[]{}#@%&';
+      const block = createModeBlock('matrix');
+      const rows = 18;
+      const blockWidth = Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9));
+      const cols = Math.min(120, blockWidth);
+      const chars = '01<>[]{}$#@%&*+xyz';
       const streams = Array.from({ length: cols }, () => Math.floor(Math.random() * rows));
-      diagMode.interval = setInterval(() => {
+      const draw = () => {
         const grid = Array.from({ length: rows }, () => Array(cols).fill(' '));
-        streams.forEach((head, x, idx) => {
-          for (let y = 0; y < 5; y++) {
+        streams.forEach((head, x, index) => {
+          for (let y = 0; y < 7; y++) {
             const row = (head - y + rows) % rows;
             grid[row][x] = chars[Math.floor(Math.random() * chars.length)];
           }
-          streams[idx] = (head + 1) % rows;
+          streams[index] = (head + 1) % rows;
         });
-        el.textContent = grid.map((r) => r.join('')).join('\n');
-      }, 110);
+        block.textContent = grid.map((row) => row.join('')).join('\n');
+      };
+      draw();
+      activeTerminalMode.interval = setInterval(draw, 110);
     }
 
-    function handleDiagCommand(raw) {
-      const cmd = raw.trim();
-      if (!cmd) return;
-      diagPrint(`mason@rack:~$ ${cmd}`, 'diag-green');
-      if (cmd === 'help') {
-        diagPrint('commands: help, status, uptime, matrix, stop, clear');
-      } else if (cmd === 'status') {
-        diagPrint('rack: online | U1-U5: nominal | telemetry bus: linked', 'diag-green');
-      } else if (cmd === 'uptime') {
-        diagPrint(document.getElementById('telUptime').textContent, 'diag-green');
-      } else if (cmd === 'matrix') {
-        runMatrix();
-      } else if (cmd === 'stop') {
-        stopDiagMode();
-        diagPrint('stopped active mode.');
-      } else if (cmd === 'clear') {
-        stopDiagMode();
-        diagOutput.innerHTML = '';
-      } else {
-        diagPrint(`command not found: ${cmd}`);
+    function runBonsai() {
+      const block = createModeBlock('bonsai');
+      const frames = [
+`          &&&
+         &&&&&
+           ||
+          /||\\
+         //||\\
+        ___||___`,
+`           &&
+         &&&&&&
+        &&&&&&&&
+           ||
+          /||\\
+        __/||\\__`,
+`           &&
+         &&&&&&
+       &&&&&&&&&&
+          _||_
+         / || \\
+       _/  ||  \\_`
+      ];
+      let i = 0;
+      block.textContent = frames[0];
+      activeTerminalMode.interval = setInterval(() => {
+        i = (i + 1) % frames.length;
+        block.textContent = frames[i];
+      }, 700);
+    }
+
+    function runAquarium() {
+      const block = createModeBlock('aquarium');
+      const width = Math.min(110, Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9)));
+      const fish = [
+        { x: 2, y: 4, dir: 1, right: '><((*>', left: '<*)))><' },
+        { x: width - 14, y: 10, dir: -1, right: '><{{(°>', left: '<°)}}><' },
+        { x: Math.floor(width / 2), y: 7, dir: 1, right: '><> ', left: ' <><' }
+      ];
+      const seaweed = [8, Math.floor(width * 0.35), Math.floor(width * 0.62), width - 10];
+      const draw = () => {
+        const rows = Array.from({ length: 16 }, () => Array(width).fill(' '));
+        seaweed.forEach((x, idx) => {
+          for (let y = 10; y < 16; y++) {
+            const sway = ((y + idx) % 2);
+            const px = Math.max(0, Math.min(width - 1, x + sway));
+            rows[y][px] = '|';
+          }
+        });
+        fish.forEach((f) => {
+          const art = f.dir === 1 ? f.right : f.left;
+          for (let i = 0; i < art.length; i++) {
+            const x = f.x + i;
+            if (x >= 0 && x < width && f.y >= 0 && f.y < rows.length) rows[f.y][x] = art[i];
+          }
+          f.x += f.dir;
+          if (f.x <= 0 || f.x >= width - art.length) f.dir *= -1;
+          if (Math.random() > 0.76) f.y += Math.random() > 0.5 ? 1 : -1;
+          f.y = Math.max(2, Math.min(12, f.y));
+        });
+        rows[15] = Array(width).fill('~');
+        block.textContent = rows.map((row) => row.join('')).join('\n');
+      };
+      draw();
+      activeTerminalMode.interval = setInterval(draw, 240);
+    }
+
+    function runNDSU() {
+      appendTerminalBlock(`<pre style="margin:0;">
+
+
+
+
+          ----++----+##++--- ----
+        --+####################-- ----+--##+-
+        --+########+------+#########---+#########+-
+        --+###----+#####++###############+..-+####+-
+        ------++####+###########################+..-#+--+##+-
+        -#########################################-.+#---+##+-
+        -++++- -++++-++++++++####++###++++++++--++++-+######+++--##+--
+        --####+ +####+#########+-########-####--+####+##-----+###-+##+-
+        -#####-###+--###+-+###-####--##--####--###++###+-------++##+-
+        -+#########--+###--+###--#####+---###+-+###+######+---+--+#-
+        -###+#####---###+--###+---+####+-####--############----####- -+#++-
+        -+###-+####--+###+####++##+-+###++###+-+###+#######--+#+-+##-+##++-#-
+        -####+ +###+-#########--########++-########-########+-++###+---++--.+#-
+        ------ -------------- ------++#####+++++########--#####+- ++-#---+#-
+        --+#################- --++-- -+#--+#+-
+        --##########-###+- -++-
+        -+######+---+-- ----
+        -###+--- -
+        ---</pre>`);
+    }
+
+    function handleCommand(raw) {
+      const command = raw.trim();
+      if (!command) return;
+
+      appendTerminalText(`mason@rack:~$ ${command}`, 'ok');
+
+      if (command === 'clear') {
+        stopTerminalMode();
+        terminalOutput.innerHTML = '';
+        return;
       }
+      if (command === 'help') { runHelp(); return; }
+      if (command === 'fetch' || command === './fetch_profile') { renderFetchProfile(); return; }
+      if (command === 'matrix') { runMatrix(); return; }
+      if (command === 'bonsai') { runBonsai(); return; }
+      if (command === 'aquarium') { runAquarium(); return; }
+      if (command === 'ndsu') { runNDSU(); return; }
+      if (command === 'stop') { stopTerminalMode(); appendTerminalText('stopped active terminal mode', 'accent'); return; }
+
+      if (command === 'neofetch') {
+        appendTerminalBlock(`<pre style="margin:0;color:var(--term);">███╗   ███╗   Mason Grajczyk
+████╗ ████║   ─────────────────────────
+██╔████╔██║   role: Computer Engineering student
+██║╚██╔╝██║   focus: systems / deployment / troubleshooting
+██║ ╚═╝ ██║   stack: Java / VHDL / MATLAB / Docker
+╚═╝     ╚═╝   infra: self-hosting / containerization / virtualization
+               school: North Dakota State University
+               location: Wayzata, MN / Fargo, ND
+               status: looking for technical opportunities
+</pre>`);
+        return;
+      }
+
+      if (command === 'ping') {
+        appendTerminalText('64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.034 ms', 'ok');
+        return;
+      }
+
+      appendTerminalText(`command not found: ${command}`);
     }
 
-    diagInput.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter') return;
-      const val = diagInput.value;
-      diagInput.value = '';
-      handleDiagCommand(val);
+    function startTerminalHero() {
+      terminalInput.disabled = true;
+      const sequence = './fetch_profile';
+      if (reduceMotion) {
+        appendTerminalText(`mason@rack:~$ ${sequence}`, 'ok');
+        revealHeroLines();
+        return;
+      }
+      let typed = '';
+      let i = 0;
+      const typeTimer = setInterval(() => {
+        typed += sequence[i] || '';
+        terminalInput.value = typed;
+        i += 1;
+        if (i > sequence.length - 1) {
+          clearInterval(typeTimer);
+          setTimeout(() => {
+            appendTerminalText(`mason@rack:~$ ${sequence}`, 'ok');
+            terminalInput.value = '';
+            revealHeroLines();
+          }, 180);
+        }
+      }, 45);
+    }
+
+    terminalInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const value = terminalInput.value;
+      terminalInput.value = '';
+      handleCommand(value);
     });
 
     runBootSequence();
