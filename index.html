@@ -3,2120 +3,1396 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mason Grajczyk | Living OS Portfolio</title>
-  <meta name="description" content="Interactive retro desktop portfolio for Mason Grajczyk with terminal UI, live windows, and systems-inspired design." />
+  <title>Mason Grajczyk — Systems Engineering</title>
+  <meta name="description" content="Portfolio of Mason Grajczyk, Computer Engineering student focused on systems engineering, self-hosted infrastructure, deployment, and hardware diagnostics." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Fira+Code:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #091018;
-      --bg-2: #0e1620;
-      --panel: rgba(14, 20, 29, 0.88);
-      --panel-2: rgba(18, 27, 39, 0.96);
-      --line: rgba(150, 177, 206, 0.16);
-      --line-strong: rgba(150, 177, 206, 0.28);
-      --text: #edf4ff;
-      --muted: #93a4bc;
-      --red: #d54b52;
-      --red-soft: #ff9ca0;
-      --blue: #72b7ff;
-      --blue-soft: #d6e8ff;
-      --cyan: #93efff;
-      --green: #6ddf9a;
-      --shadow: 0 26px 90px rgba(0, 0, 0, 0.44);
-      --radius: 8px;
+      --ink: #0a0c0e;
+      --ink-2: #101317;
+      --panel: #15181c;
+      --panel-2: #1b1f24;
+      --line: #262b31;
+      --line-bright: #3a4149;
+      --paper: #ece8de;
+      --paper-dim: #cfccc2;
+      --muted: #8b9099;
+      --signal: #ff6a2e;
+      --signal-dim: #c9531f;
+      --signal-soft: rgba(255, 106, 46, 0.14);
+      --ok: #6fe7b3;
+      --ok-soft: rgba(111, 231, 179, 0.14);
+      --warn: #ffc857;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --sans: "IBM Plex Sans", system-ui, sans-serif;
       --max: 1180px;
-      --mono: "Fira Code", monospace;
-      --sans: "Instrument Sans", sans-serif;
-      --display: "Syne", sans-serif;
+      --rail-w: 64px;
+      --radius: 2px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
     body {
       margin: 0;
-      color: var(--text);
+      background: var(--ink);
+      color: var(--paper);
       font-family: var(--sans);
-      background:
-        radial-gradient(circle at 12% 18%, rgba(213, 75, 82, 0.14), transparent 22%),
-        radial-gradient(circle at 85% 14%, rgba(114, 183, 255, 0.14), transparent 24%),
-        linear-gradient(180deg, #081018 0%, #0b1118 42%, #0c1219 100%);
+      -webkit-font-smoothing: antialiased;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    body::before,
-    body::after {
+    body::before {
       content: "";
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 0;
-    }
-
-    body::before {
       background-image:
-        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: 0.42;
-      mask-image: linear-gradient(180deg, rgba(255,255,255,0.52), transparent 82%);
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 34px 34px;
     }
-
-    body::after {
-      background: repeating-linear-gradient(
-        180deg,
-        rgba(255,255,255,0.024) 0px,
-        rgba(255,255,255,0.024) 1px,
-        transparent 1px,
-        transparent 3px
-      );
-      opacity: 0.1;
-      mix-blend-mode: screen;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translate3d(0, 0, 0); }
-      50% { transform: translate3d(12px, -14px, 0); }
-    }
-
-    @keyframes riseIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes crtSweep {
-      0% { transform: translateY(-100%); opacity: 0.2; }
-      100% { transform: translateY(100vh); opacity: 0.9; }
-    }
-
-    .ambient {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .glow {
-      position: absolute;
-      border-radius: 999px;
-      filter: blur(38px);
-      opacity: 0.22;
-      animation: float 11s ease-in-out infinite;
-    }
-
-    .glow.one { width: 240px; height: 240px; left: -60px; top: 100px; background: rgba(213, 75, 82, 0.42); }
-    .glow.two { width: 280px; height: 280px; right: -70px; top: 220px; background: rgba(114, 183, 255, 0.36); animation-delay: -3s; }
-    .glow.three { width: 300px; height: 180px; left: 34%; bottom: -40px; background: rgba(147, 239, 255, 0.16); animation-delay: -6s; }
 
     a { color: inherit; text-decoration: none; }
-    .wrap { width: min(calc(100% - 2rem), var(--max)); margin: 0 auto; position: relative; z-index: 1; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    button { font: inherit; }
 
-    #site-shell {
-      opacity: 1;
-      transition: opacity 480ms ease;
+    .wrap { width: min(calc(100% - 2.4rem), var(--max)); margin: 0 auto; position: relative; z-index: 1; }
+
+    :focus-visible {
+      outline: 2px solid var(--signal);
+      outline-offset: 2px;
     }
 
-    #site-shell.boot-hidden {
-      opacity: 0;
+    /* ---------- shared type ---------- */
+    .eyebrow, .led-label, .nameplate-tag, .rail-num, .runit-label, .brand, .toplinks, .topmeta, .chip, .btn, .telemetry dt, .telemetry dd, .badge, .project-tags span, .meta {
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
     }
 
-    #boot-overlay {
+    .eyebrow {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      color: var(--signal);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: var(--signal);
+    }
+
+    h1, h2, h3 { margin: 0; font-family: var(--mono); font-weight: 700; }
+
+    p { line-height: 1.7; color: var(--muted); margin: 0 0 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ---------- LEDs ---------- */
+    .led {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--line-bright);
+      display: inline-block;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.02);
+    }
+
+    .led--signal { background: var(--signal); box-shadow: 0 0 8px rgba(255, 106, 46, 0.7); }
+    .led--ok { background: var(--ok); box-shadow: 0 0 8px rgba(111, 231, 179, 0.6); }
+
+    @keyframes ledPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .led--pulse { animation: ledPulse 2.4s ease-in-out infinite; }
+
+    /* ---------- boot overlay ---------- */
+    #boot {
       position: fixed;
       inset: 0;
       z-index: 9999;
-      background: #000;
-      color: #b6ffd1;
+      background: var(--ink);
+      color: var(--ok);
       font-family: var(--mono);
-      display: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    #boot.boot-done { display: none; }
+
+    .boot-panel { width: min(100%, 640px); }
+
+    .boot-log {
+      white-space: pre-wrap;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      min-height: 9rem;
+      margin: 0 0 1rem;
+    }
+
+    .boot-meter {
+      height: 2px;
+      background: var(--line);
       overflow: hidden;
     }
 
-    #boot-overlay.active {
-      display: block;
-    }
-
-    .boot-inner {
-      position: absolute;
-      inset: 0;
-      padding: 2rem;
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
-    }
-
-    #boot-log {
-      white-space: pre-wrap;
-      font-size: 0.95rem;
-      line-height: 1.45;
-      max-width: 70rem;
-    }
-
-    .boot-scanline {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #boot-overlay.exit .boot-scanline {
-      opacity: 1;
-      animation: crtSweep 360ms linear forwards;
-    }
-
-    #boot-overlay.exit #boot-log {
-      opacity: 0;
-      transition: opacity 280ms ease;
-    }
-
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(16px);
-      background: rgba(8, 13, 19, 0.82);
-      border-bottom: 1px solid rgba(150, 177, 206, 0.08);
-    }
-
-    .nav-inner {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 0;
-    }
-
-    .brand,
-    .nav-links,
-    .nav-right,
-    .window-bar,
-    .section-tag,
-    .label,
-    .chip,
-    .meta,
-    .telemetry-track,
-    .terminal-prompt,
-    .terminal-input,
-    .tooltip-panel,
-    .badge {
-      font-family: var(--mono);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      font-size: 0.84rem;
-      letter-spacing: 0.08em;
-      color: var(--blue-soft);
-      justify-self: start;
-    }
-
-    .brand-mark {
-      width: 2.2rem;
-      height: 2.2rem;
-      border: 1px solid rgba(114, 183, 255, 0.34);
-      display: grid;
-      place-items: center;
-      color: var(--red-soft);
-      background: rgba(114, 183, 255, 0.08);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
-    }
-
-    .nav-links {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1.1rem;
-      font-size: 0.84rem;
-      color: var(--muted);
-      justify-self: center;
-    }
-
-    .nav-links a {
-      position: relative;
-      padding: 0.2rem 0;
-    }
-
-    .nav-links a::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      bottom: -0.15rem;
+    .boot-meter-fill {
+      height: 100%;
       width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, var(--red), var(--blue));
+      background: var(--signal);
       transform: scaleX(0);
       transform-origin: left;
-      transition: transform 180ms ease;
     }
 
-    .nav-links a:hover::after { transform: scaleX(1); }
-    .nav-links a:hover,
-    .small-link:hover { color: var(--blue); }
+    body.boot-active { overflow: hidden; }
 
-    .nav-right {
-      justify-self: end;
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .window-card {
-      background: linear-gradient(180deg, rgba(17, 24, 34, 0.86), rgba(10, 16, 24, 0.94));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      position: relative;
-      transition: opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
-      animation: riseIn 0.7s ease both;
-    }
-
-    .window-card:hover,
-    .window-card.active-window {
-      transform: translateY(-4px);
-      box-shadow: 0 0 15px rgba(147, 239, 255, 0.07), 0 34px 110px rgba(0, 0, 0, 0.5);
-      border-color: rgba(147, 239, 255, 0.34);
-    }
-
-    .window-collection:has(.window-card:hover) .window-card:not(:hover) {
-      opacity: 0.6;
-    }
-
-    .window-card.maximized {
-      width: 90vw !important;
-      max-width: 1000px !important;
-      height: 82vh !important;
-      max-height: 82vh !important;
-      display: flex !important;
-      flex-direction: column !important;
-      overflow: hidden !important;
-      position: fixed !important;
-      inset: calc(50% + 48px) auto auto 50% !important;
-      transform: translate(-50%, -50%) !important;
-      z-index: 3001 !important;
-    }
-
-    .window-card.maximized .window-bar {
-      flex-shrink: 0 !important;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(10, 16, 24, 0.98);
-    }
-
-    .window-card.maximized .window-content,
-    .window-card.maximized .side-content,
-    .window-card.maximized .hero-grid,
-    .window-card.maximized .portrait-wrap {
-      flex: 1 1 auto !important;
-      overflow-y: auto !important;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .window-card.maximized .window-content {
-      padding: 3rem;
-    }
-
-    .window-card.maximized .window-content h3 {
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .window-card.maximized .window-content p,
-    .window-card.maximized .window-content ul,
-    .window-card.maximized .window-content li {
-      font-size: 1.25rem;
-      line-height: 1.8;
-    }
-
-    .window-card.maximized .chip,
-    .window-card.maximized .project-tags span {
-      font-size: 1rem;
-      padding: 0.8rem 1.2rem;
-    }
-
-    .window-card.maximized .experience-body {
-      gap: 2rem;
-    }
-
-    .window-card.maximized .meta {
-      font-size: 1rem;
-    }
-
-    .window-card.maximized .portrait-wrap img {
-      max-height: 100%;
-      width: auto;
-      margin: 0 auto;
-      object-fit: contain;
-    }
-
-    .window-card.minimized .window-content {
-      display: none;
-    }
-
-    .window-card.hidden {
-      display: none !important;
-    }
-
-    .window-overlay {
+    /* ---------- rack rail (desktop side nav) ---------- */
+    .rack-rail {
       position: fixed;
-      inset: 0;
-      background: rgba(3, 6, 10, 0.62);
-      backdrop-filter: blur(3px);
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--rail-w);
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.1rem 0;
+    }
+
+    .rail-brand {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-bright);
+      color: var(--signal);
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .rail-bus {
+      width: 2px;
+      flex: 1;
+      background: var(--line);
+      position: relative;
+      margin-bottom: 1.4rem;
+      min-height: 40px;
+    }
+
+    .rail-bus-fill {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      background: var(--signal);
+      transform: scaleY(0);
+      transform-origin: top;
+      height: 100%;
+    }
+
+    .rail-slots {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .rail-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+      transition: color 200ms ease;
+      position: relative;
+    }
+
+    .rail-slot .led { transition: background 200ms ease, box-shadow 200ms ease; }
+
+    .rail-slot .rail-num { font-size: 0.62rem; }
+
+    .rail-slot:hover { color: var(--paper); }
+
+    .rail-slot.is-active { color: var(--signal); }
+    .rail-slot.is-active .led { background: var(--signal); box-shadow: 0 0 8px rgba(255, 106, 46, 0.7); }
+
+    .rail-slot .rail-tip {
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--panel-2);
+      border: 1px solid var(--line-bright);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.68rem;
+      white-space: nowrap;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 220ms ease;
-      z-index: 1000;
+      transition: opacity 150ms ease;
     }
 
-    .window-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    .rail-slot:hover .rail-tip { opacity: 1; }
 
-    .window-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid rgba(150, 177, 206, 0.1);
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .window-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .lights {
-      display: flex;
-      gap: 0.45rem;
-      align-items: center;
-    }
-
-    .lights:empty {
-      display: none;
-    }
-
-    .light {
-      width: 0.72rem;
-      height: 0.72rem;
-      border-radius: 50%;
-      box-shadow: 0 0 12px rgba(255,255,255,0.08);
-      border: none;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .light.red { background: #ff5f57; }
-    .light.yellow { background: #ffbd2f; }
-    .light.green { background: #28c840; }
-
-    .window-content,
-    .metric,
-    .side-content {
-      padding: 1rem;
-    }
-
-    .hero {
-      padding: 2.75rem 0 1.4rem;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
-    }
-
-    .hero-main {
-      padding: 1.25rem 1.25rem 1.4rem;
-      border-right: 1px solid rgba(150, 177, 206, 0.08);
-      position: relative;
-      z-index: 2;
-    }
-
-    .hero-side {
-      padding: 1rem;
-      background: linear-gradient(180deg, rgba(15, 22, 31, 0.94), rgba(10, 16, 24, 0.98));
-    }
-
-    .status-line,
-    .section-tag,
-    .label,
-    .meta {
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-size: 0.8rem;
-    }
-
-    .status-line { color: var(--red-soft); margin-bottom: 0.9rem; }
-
-    h1, h2, h3 { margin-top: 0; }
-    h1, h2, h3 { font-family: var(--display); }
-
-    h1 {
-      font-size: clamp(3.6rem, 9vw, 7rem);
-      line-height: 0.88;
-      letter-spacing: -0.05em;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-    }
-
-    .line-two { display: block; color: var(--blue-soft); }
-
-    .terminal-hero {
-      min-height: 27rem;
-    }
-
-    .terminal-shell {
-      border: 1px solid rgba(150, 177, 206, 0.12);
-      background: rgba(5, 9, 14, 0.6);
-      min-height: 100%;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: flex-start;
-    }
-
-    .terminal-output {
-      min-height: 15rem;
-      width: 100%;
-      white-space: pre-wrap;
-      color: var(--muted);
-      line-height: 1.7;
+    .rail-status {
+      margin-top: auto;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
       font-family: var(--mono);
-      font-size: 0.92rem;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: flex-start;
-      align-content: flex-start;
-      text-align: left;
-    }
-
-    .terminal-entry {
-      width: 100%;
-      opacity: 0;
-      transform: translateY(6px);
-      animation: terminalFadeIn 260ms ease forwards;
-    }
-
-    @keyframes terminalFadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .terminal-output .hero-name {
-      font-family: var(--display);
-      color: var(--text);
-      font-size: clamp(4.2rem, 10vw, 8.2rem);
-      line-height: 0.88;
-      letter-spacing: -0.05em;
-      margin: 0 0 1rem;
-      text-transform: uppercase;
-    }
-
-    .terminal-output .hero-name span {
-      display: block;
-      color: var(--blue-soft);
-    }
-
-    .terminal-output .hero-bio {
-      max-width: 44rem;
-      color: var(--muted);
-      font-family: var(--sans);
-      font-size: 1.03rem;
-      line-height: 1.75;
-      margin-bottom: 1rem;
-    }
-
-    .terminal-output pre {
-      margin: 0 0 1rem;
-      color: var(--cyan);
-      font-family: var(--mono);
-      font-size: 0.88rem;
-      line-height: 1.55;
-    }
-
-    .terminal-mode {
-      width: 100%;
-      margin: 0 0 1rem;
-      padding: 0.85rem 0.9rem;
-      border: 1px solid rgba(150, 177, 206, 0.12);
-      background: rgba(255,255,255,0.025);
-      color: var(--blue-soft);
-      font-family: var(--mono);
-      font-size: clamp(0.8rem, 1.1vw, 0.9rem);
-      line-height: 1.45;
-      white-space: pre;
-      overflow: hidden;
-    }
-
-    .terminal-mode.matrix {
-      color: var(--green);
-      min-height: 12rem;
-    }
-
-    .terminal-mode.bonsai {
-      color: #b8f7c1;
-    }
-
-    .terminal-mode.aquarium {
-      color: var(--cyan);
-      min-height: 12rem;
-    }
-
-    .terminal-line {
+      font-size: 0.64rem;
+      color: var(--ok);
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-top: auto;
-      padding-top: 0.8rem;
-      border-top: 1px solid rgba(150, 177, 206, 0.12);
-      width: 100%;
-      font-family: var(--mono);
+      letter-spacing: 0.12em;
     }
 
-    .terminal-prompt { color: var(--green); flex: 0 0 auto; }
+    @media (max-width: 960px) {
+      .rack-rail { display: none; }
+    }
 
-    .terminal-input {
-      flex: 1;
-      min-width: 0;
+    /* ---------- topbar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 400;
+      background: rgba(10, 12, 14, 0.86);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      margin-left: var(--rail-w);
+    }
+
+    @media (max-width: 960px) {
+      .topbar { margin-left: 0; }
+    }
+
+    .topbar-inner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 0.95rem 0;
+    }
+
+    .brand {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      color: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toplinks {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    .toplinks a { position: relative; padding: 0.15rem 0; }
+    .toplinks a::before { content: "["; opacity: 0; transition: opacity 150ms ease; margin-right: 2px; }
+    .toplinks a::after { content: "]"; opacity: 0; transition: opacity 150ms ease; margin-left: 2px; }
+    .toplinks a:hover { color: var(--signal); }
+    .toplinks a:hover::before, .toplinks a:hover::after { opacity: 1; }
+
+    .topmeta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.68rem;
+      color: var(--muted);
+      justify-self: end;
+    }
+
+    .topmeta .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--ok);
+      border: 1px solid var(--line-bright);
+      padding: 0.3rem 0.5rem;
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        padding: 0.75rem 0;
+      }
+
+      .topmeta { margin-left: auto; }
+
+      .toplinks {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        gap: 1.1rem;
+        padding-bottom: 0.15rem;
+      }
+    }
+
+    .topbar-progress {
+      height: 2px;
+      background: var(--line);
+      display: none;
+    }
+
+    .topbar-progress-fill {
+      height: 100%;
+      background: var(--signal);
+      width: 0%;
+    }
+
+    @media (max-width: 960px) {
+      .topbar-progress { display: block; }
+    }
+
+    /* ---------- layout shell ---------- */
+    main { margin-left: var(--rail-w); }
+
+    @media (max-width: 960px) {
+      main { margin-left: 0; }
+    }
+
+    section { padding: 5.5rem 0 0; }
+    section:first-of-type { padding-top: 0; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+    }
+
+    .section-head h2 {
+      font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head .section-desc {
+      max-width: 30rem;
+      text-align: right;
+      font-size: 0.86rem;
+      margin: 0;
+    }
+
+    @media (max-width: 720px) {
+      .section-head { flex-direction: column; }
+      .section-head .section-desc { text-align: left; }
+    }
+
+    /* ---------- runit (rack-unit panel) ---------- */
+    .runit {
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      position: relative;
+      padding: 1.6rem 1.7rem 1.8rem;
+      opacity: 0;
+      transform: translateY(28px);
+    }
+
+    .runit::before, .runit::after {
+      content: "";
+      position: absolute;
+      top: 9px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--line-bright);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
+    }
+
+    .runit::before { left: 9px; }
+    .runit::after { right: 9px; }
+
+    .runit-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+
+    .runit-controls {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+      color: var(--muted);
+    }
+
+    .runit-controls button {
+      background: none;
       border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--blue-soft);
-      font-size: 0.92rem;
+      color: inherit;
+      cursor: pointer;
+      font-size: 0.68rem;
+      padding: 0;
     }
 
-    .hero-badges,
-    .cta-row,
-    .chips,
-    .project-tags,
-    .contact-links {
+    .runit-controls button:hover { color: var(--signal); }
+
+    .runit h3 {
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0;
+    }
+
+    .runit.maximized {
+      position: fixed;
+      inset: 4vh 4vw;
+      z-index: 2000;
+      overflow-y: auto;
+      max-width: none;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .runit.minimized > *:not(.runit-label) { display: none; }
+    .runit.rhidden { display: none; }
+
+    .runit-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 6, 8, 0.7);
+      backdrop-filter: blur(3px);
+      z-index: 1900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    .runit-overlay.active { opacity: 1; pointer-events: auto; }
+
+    /* ---------- hero ---------- */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
+      gap: 1.1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+
+    .nameplate {
+      font-size: clamp(3rem, 8vw, 5.6rem);
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+
+    .nameplate span { color: var(--signal); display: block; }
+
+    .hero-role {
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.3rem;
+    }
+
+    .hero-bio {
+      max-width: 40rem;
+      font-size: 1rem;
+    }
+
+    .hero-badges {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.7rem;
-    }
-
-    .badge,
-    .chip,
-    .project-tags span,
-    .contact-link {
-      border: 1px solid rgba(150, 177, 206, 0.14);
-      background: rgba(255,255,255,0.03);
-      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      gap: 0.6rem;
+      margin: 1.3rem 0 1.5rem;
     }
 
     .badge {
-      padding: 0.62rem 0.82rem;
-      font-size: 0.78rem;
-      color: #d9e8fb;
+      border: 1px solid var(--line-bright);
+      padding: 0.5rem 0.7rem;
+      font-size: 0.68rem;
+      color: var(--paper-dim);
+      text-transform: uppercase;
     }
 
-    .badge:hover,
-    .chip:hover,
-    .project-tags span:hover,
-    .contact-link:hover {
-      transform: translateY(-2px);
-      border-color: rgba(114, 183, 255, 0.26);
-      background: rgba(114, 183, 255, 0.08);
-    }
-
-    .cta-row { margin-top: 1rem; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.8rem; }
 
     .btn {
-      min-height: 46px;
-      padding: 0 1rem;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      transition: transform 180ms ease, box-shadow 180ms ease;
+      gap: 0.5rem;
+      min-height: 46px;
+      padding: 0 1.3rem;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 160ms var(--ease-out), background 160ms ease, border-color 160ms ease;
     }
 
     .btn:hover { transform: translateY(-2px); }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--red), #f06b71);
-      color: #fff;
-      box-shadow: 0 12px 26px rgba(213, 75, 82, 0.2);
+    .btn-signal {
+      background: var(--signal);
+      color: var(--ink);
+      font-weight: 700;
     }
 
-    .btn-secondary {
-      background: rgba(114, 183, 255, 0.07);
-      border-color: rgba(114, 183, 255, 0.24);
-      color: var(--blue-soft);
+    .btn-outline {
+      border-color: var(--line-bright);
+      color: var(--paper);
+      background: rgba(255, 255, 255, 0.02);
     }
 
-    .metrics {
+    .btn-outline:hover { border-color: var(--signal); color: var(--signal); }
+
+    .hero-side { display: grid; gap: 1.1rem; }
+
+    .telemetry-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.9rem;
-      margin-top: 1.2rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem 1rem;
+      margin: 0;
     }
 
-    .metric,
-    .side-pane {
-      background: linear-gradient(180deg, rgba(20, 29, 40, 0.88), rgba(13, 20, 29, 0.94));
-      border: 1px solid rgba(150, 177, 206, 0.12);
+    .telemetry-grid > div { display: flex; flex-direction: column; gap: 0.25rem; }
+    .telemetry dt { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; }
+    .telemetry dd { font-size: 0.86rem; color: var(--ok); margin: 0; }
+
+    .bay-frame {
+      border: 1px solid var(--line-bright);
+      padding: 0.5rem;
+      background: var(--ink-2);
     }
 
-    .metric strong {
-      display: block;
-      margin-bottom: 0.35rem;
-      color: var(--red-soft);
-      font-size: 1.35rem;
-    }
-
-    .metric span,
-    .muted,
-    ul { color: var(--muted); }
-
-    .side-stack { display: grid; gap: 0.9rem; }
-    .side-content strong { display: block; margin-bottom: 0.3rem; }
-    .label { color: var(--muted); margin-bottom: 0.45rem; }
-
-    .portrait-wrap {
-      padding: 0.8rem;
-    }
-
-    .portrait-wrap img {
+    .bay-frame img {
       display: block;
       width: 100%;
       height: auto;
-      border: 1px solid rgba(150, 177, 206, 0.14);
-      object-fit: cover;
-      background: rgba(255,255,255,0.02);
+      filter: grayscale(0.25) contrast(1.05);
     }
 
-    section { padding: 1.1rem 0 0; }
-
-    .section-head {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.65rem;
-      align-items: center;
-      justify-items: center;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    .section-tag { color: var(--red-soft); }
-
-    .section-copy {
-      display: grid;
-      justify-items: center;
-      text-align: center;
-    }
-
-    .section-copy h2 {
-      font-size: clamp(1.9rem, 4vw, 3rem);
-      letter-spacing: -0.04em;
-      margin-bottom: 0.35rem;
-      text-transform: uppercase;
-      text-align: center;
-    }
-
-    .section-copy p {
-      max-width: 44rem;
-      line-height: 1.7;
-      color: var(--muted);
-      text-align: center;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .content-grid {
+    /* ---------- about / stack grids ---------- */
+    .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 1.1rem;
     }
 
-    .window-content p { line-height: 1.7; }
+    @media (max-width: 760px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
 
-    .chips { margin-top: 0.4rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 
     .chip {
-      padding: 0.58rem 0.76rem;
-      font-size: 0.78rem;
-      color: #dceaff;
-      position: relative;
+      border: 1px solid var(--line-bright);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.5rem 0.7rem;
+      font-size: 0.7rem;
+      color: var(--paper-dim);
       cursor: default;
+      position: relative;
+      transition: border-color 160ms ease, color 160ms ease;
     }
+
+    .chip:hover { border-color: var(--signal); color: var(--signal); }
 
     .tooltip-panel {
       position: fixed;
-      left: 0;
-      top: 0;
       max-width: 300px;
       padding: 0.8rem 0.9rem;
-      background: rgba(18, 20, 24, 0.98);
-      border: 1px solid rgba(114, 183, 255, 0.28);
-      color: var(--blue-soft);
+      background: var(--panel-2);
+      border: 1px solid var(--line-bright);
+      color: var(--paper-dim);
+      font-family: var(--mono);
       font-size: 0.72rem;
-      line-height: 1.55;
-      white-space: normal;
-      z-index: 2000;
-      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.32);
+      line-height: 1.6;
+      z-index: 2100;
       pointer-events: none;
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 120ms ease, transform 120ms ease;
     }
 
-    .tooltip-panel.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .tooltip-panel.visible { opacity: 1; transform: translateY(0); }
 
-    .projects-grid,
-    .experience-list,
-    .contact-grid {
+    /* ---------- projects ---------- */
+    .projects-grid {
       display: grid;
-      gap: 1rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.1rem;
     }
 
-    .projects-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .project-meta,
-    .meta {
-      color: var(--muted);
-      font-size: 0.76rem;
-      margin-bottom: 0.9rem;
+    @media (max-width: 960px) {
+      .projects-grid { grid-template-columns: 1fr; }
     }
 
-    .project-num,
-    .meta { color: var(--red-soft); }
-
-    .project-tags { margin-top: 1rem; }
-
+    .project-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.1rem; }
     .project-tags span {
-      padding: 0.4rem 0.58rem;
-      font-size: 0.72rem;
-      color: var(--blue-soft);
-    }
-
-    .experience-body {
-      display: grid;
-      grid-template-columns: 170px 1fr;
-      gap: 1rem;
-    }
-
-    ul {
-      margin: 0;
-      padding-left: 1.1rem;
-      line-height: 1.7;
-    }
-
-    .contact-grid {
-      grid-template-columns: 0.9fr 1.1fr;
-      margin-bottom: 5.5rem;
-    }
-
-    .contact-links {
-      display: grid;
-      gap: 0.8rem;
-      margin-top: 1rem;
-    }
-
-    .contact-link {
-      padding: 0.9rem 1rem;
+      border: 1px solid var(--line);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.66rem;
       color: var(--muted);
     }
 
+    .meta { font-size: 0.68rem; color: var(--signal); margin-bottom: 0.8rem; display: block; }
+
+    /* ---------- experience ---------- */
+    .experience-list { display: grid; gap: 1.1rem; }
+    .experience-body { display: grid; grid-template-columns: 150px 1fr; gap: 1.4rem; }
+
+    @media (max-width: 640px) {
+      .experience-body { grid-template-columns: 1fr; }
+    }
+
+    .experience-body ul { padding-left: 1.1rem; list-style: disc; }
+    .experience-body li { line-height: 1.7; color: var(--muted); margin-bottom: 0.4rem; }
+
+    /* ---------- contact ---------- */
+    .contact-grid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 1.1rem; margin-bottom: 4rem; }
+
+    @media (max-width: 760px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+
+    .contact-links { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+    .contact-link {
+      border: 1px solid var(--line-bright);
+      padding: 0.85rem 1rem;
+      color: var(--paper-dim);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .contact-link:hover { border-color: var(--signal); color: var(--signal); transform: translateX(4px); }
+
+    /* ---------- diagnostics console ---------- */
+    .diagnostics {
+      margin-top: 1.1rem;
+    }
+
+    .diag-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: none;
+      border: 1px dashed var(--line-bright);
+      color: var(--muted);
+      padding: 0.75rem 1rem;
+      width: 100%;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      transition: border-color 160ms ease, color 160ms ease;
+    }
+
+    .diag-toggle:hover { border-color: var(--signal); color: var(--signal); }
+
+    .diag-body {
+      display: none;
+      border: 1px solid var(--line-bright);
+      border-top: none;
+      background: var(--ink-2);
+      padding: 1rem;
+    }
+
+    .diag-body.open { display: block; }
+
+    .diag-output {
+      white-space: pre-wrap;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.65;
+      max-height: 16rem;
+      overflow-y: auto;
+      margin-bottom: 0.7rem;
+    }
+
+    .diag-output .diag-green { color: var(--ok); }
+    .diag-output .diag-signal { color: var(--signal); }
+
+    .diag-line { display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--line); padding-top: 0.7rem; }
+    .diag-prompt { color: var(--ok); font-family: var(--mono); font-size: 0.78rem; }
+    .diag-input {
+      flex: 1;
+      background: none;
+      border: 0;
+      outline: 0;
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    /* ---------- dock ---------- */
     .dock {
       position: fixed;
       left: 50%;
-      bottom: 2.2rem;
+      bottom: 1.4rem;
       transform: translateX(-50%);
-      z-index: 1002;
+      z-index: 1500;
       display: flex;
-      gap: 0.65rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
       justify-content: center;
-      max-width: min(90vw, 860px);
-      padding: 0.55rem 0.7rem;
-      border: 1px solid rgba(150, 177, 206, 0.18);
-      background: rgba(10, 14, 20, 0.72);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
+      max-width: min(90vw, 700px);
+      padding: 0.5rem;
+      border: 1px solid var(--line-bright);
+      background: rgba(21, 24, 28, 0.9);
+      backdrop-filter: blur(12px);
     }
 
     .dock:empty { display: none; }
 
     .dock-item {
-      border: 1px solid rgba(114, 183, 255, 0.18);
-      background: rgba(255,255,255,0.03);
-      color: var(--blue-soft);
-      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--line-bright);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--signal);
+      padding: 0.5rem 0.7rem;
       font-family: var(--mono);
-      font-size: 0.74rem;
+      font-size: 0.68rem;
       cursor: pointer;
     }
 
-    .dock-item:hover {
-      background: rgba(114, 183, 255, 0.1);
-    }
+    .dock-item:hover { background: var(--signal-soft); }
 
-    .status-widget {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.15rem;
-      min-width: 11.5rem;
-      padding: 0.45rem 0.65rem;
-      border: 1px solid rgba(150, 177, 206, 0.16);
-      background: rgba(255,255,255,0.03);
-      color: var(--blue-soft);
-      font-size: 0.72rem;
-      line-height: 1.35;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .status-widget .muted-line {
-      color: var(--muted);
-    }
-
-    .title-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      margin-left: auto;
-      color: var(--muted);
-      font-size: 0.76rem;
-    }
-
-    .title-control {
-      border: 0;
-      padding: 0;
-      background: transparent;
-      color: inherit;
-      cursor: pointer;
-      font: inherit;
-    }
-
-    .title-control:hover {
-      color: var(--text);
-    }
-
+    /* ---------- footer ---------- */
     footer {
-      padding: 0 0 2rem;
-      color: var(--muted);
+      margin-left: var(--rail-w);
+      padding: 2.2rem 0 3rem;
+      border-top: 1px solid var(--line);
+      margin-top: 5rem;
       font-family: var(--mono);
-      font-size: 0.82rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
     }
 
-    @media (max-width: 768px) {
-      .wrap {
-        width: 100vw;
-        max-width: 100vw;
-        margin: 0;
-        padding: 0;
-      }
+    @media (max-width: 960px) {
+      footer { margin-left: 0; }
+    }
 
-      .hero {
-        padding: 0.35rem 0 0.75rem;
-      }
-
-      .hero-grid {
-        grid-template-columns: 64% 36% !important;
-        align-items: start;
-      }
-
-      .hero-main,
-      .hero-side,
-      .window-content,
-      .side-content,
-      .metric,
-      .portrait-wrap {
-        padding: 0.5rem;
-      }
-
-      .window-card,
-      .terminal-shell,
-      .side-pane,
-      .metric,
-      .status-widget,
-      .dock,
-      .contact-link,
-      .badge,
-      .chip,
-      .project-tags span,
-      .btn {
-        border-radius: 0;
-      }
-
-      .terminal-shell {
-        padding: 10px;
-      }
-
-      .terminal-output,
-      .terminal-input,
-      .window-content,
-      .side-content,
-      .metric,
-      .chip,
-      .badge,
-      .project-tags span,
-      .contact-link,
-      .btn,
-      .window-title,
-      .label,
-      .meta,
-      .status-line {
-        font-size: 10px;
-        word-wrap: break-word;
-        overflow-wrap: anywhere;
-      }
-
-      .terminal-output,
-      .terminal-output pre,
-      .terminal-mode {
-        white-space: pre-wrap;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-      }
-
-      .terminal-output {
-        min-height: 8rem;
-      }
-
-      .terminal-output .hero-name,
-      h1 {
-        font-size: 1.45rem;
-        line-height: 0.84;
-      }
-
-      .terminal-output .hero-bio,
-      .section-copy p,
-      .window-content p,
-      ul,
-      li {
-        font-size: 10px;
-        line-height: 1.4;
-      }
-
-      .hero-badges,
-      .cta-row,
-      .chips,
-      .project-tags,
-      .contact-links {
-        display: flex;
-        flex-wrap: wrap;
-        flex-direction: row;
-        gap: 4px;
-      }
-
-      .badge,
-      .btn,
-      .chip,
-      .project-tags span {
-        padding: 4px 6px;
-        font-size: 8px;
-        line-height: 1.1;
-      }
-
-      .status-line,
-      .terminal-prompt,
-      .terminal-input,
-      .terminal-line {
-        font-size: 9px;
-      }
-
-      .terminal-line {
-        flex-wrap: nowrap;
-      }
-
-      .terminal-prompt {
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-
-      .terminal-input {
-        white-space: nowrap;
-        min-width: 0;
-      }
-
-      .side-stack {
-        grid-template-columns: 1fr;
-        gap: 0.35rem;
-      }
-
-      .metrics {
-        grid-template-columns: 1fr;
-        gap: 0.3rem;
-      }
-
-      .metric {
-        padding: 0.45rem;
-      }
-
-      .metric strong {
-        font-size: 12px;
-        margin-bottom: 0.18rem;
-      }
-
-      .metric span {
-        font-size: 10px;
-        line-height: 1.4;
-        word-wrap: normal;
-        overflow-wrap: normal;
-      }
-
-      .title-controls,
-      .hero-controls,
-      .title-control {
-        white-space: nowrap;
-        font-size: 9px;
-        gap: 0.25rem;
-      }
-
-      .nav {
-        padding-inline: 0;
-      }
-
-      .nav-inner {
-        padding: 0.45rem 0.3rem;
-        gap: 0.35rem;
-      }
-
-      .nav-inner {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .brand,
-      .nav-links,
-      .nav-right {
-        justify-self: stretch;
-      }
-
-      .brand {
-        justify-content: flex-start;
-        padding-inline: 0.3rem;
-      }
-
-      .nav-links {
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.8rem;
-        margin-top: 0.5rem;
-        padding-inline: 0.3rem;
-      }
-
-      .nav-links a {
-        font-size: 9px;
-      }
-
-      .nav-right {
-        justify-content: flex-start;
-        padding-inline: 0.3rem;
-      }
-
-      .status-widget {
-        max-width: none;
-        width: auto;
-        min-width: 0;
-        padding: 0.3rem 0.4rem;
-      }
-
-      .content-grid,
-      .projects-grid,
-      .contact-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 0.3rem;
-      }
-
-      .experience-body {
-        grid-template-columns: 76px 1fr;
-        gap: 0.45rem;
-      }
-
-      .dock {
-        left: 50%;
-        right: auto;
-        width: min(calc(100% - 0.4rem), 34rem);
-        transform: translateX(-50%);
-        bottom: 0.4rem;
-        justify-content: center;
-        overflow-x: auto;
-        flex-wrap: wrap;
-      }
-
-      .window-card.maximized {
-        width: calc(100vw - 1rem) !important;
-        max-width: calc(100vw - 1rem) !important;
-        height: calc(100vh - 6.5rem) !important;
-        max-height: calc(100vh - 6.5rem) !important;
-        inset: calc(50% + 82px) auto auto 50% !important;
-        z-index: 3002 !important;
-      }
-
-      footer {
-        padding-inline: 0.3rem;
-        padding-bottom: 4.2rem;
-      }
+    /* ---------- reduced motion ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .runit { opacity: 1 !important; transform: none !important; }
+      #boot { display: none !important; }
     }
   </style>
 </head>
-<body>
-  <div id="boot-overlay" aria-hidden="true">
-    <div class="boot-inner">
-      <div id="boot-log"></div>
+<body class="boot-active">
+
+  <div id="boot">
+    <div class="boot-panel">
+      <pre class="boot-log" id="bootLog"></pre>
+      <div class="boot-meter"><div class="boot-meter-fill" id="bootFill"></div></div>
     </div>
-    <div class="boot-scanline"></div>
   </div>
 
-  <div class="ambient">
-    <div class="glow one"></div>
-    <div class="glow two"></div>
-    <div class="glow three"></div>
-  </div>
-
-  <div class="window-overlay" id="window-overlay"></div>
+  <div class="runit-overlay" id="runitOverlay"></div>
   <div class="dock" id="dock"></div>
+  <div class="tooltip-panel" id="tooltipPanel"></div>
 
-  <div id="site-shell" class="boot-hidden">
-    <nav class="nav">
-      <div class="wrap nav-inner">
-        <a href="#top" class="brand">
-          <span class="brand-mark">M</span>
-          <span>MAZON.SYSTEMS</span>
-        </a>
-        <div class="nav-links">
-          <a href="#about">ABOUT</a>
-          <a href="#stack">STACK</a>
-          <a href="#projects">PROJECTS</a>
-          <a href="#experience">EXPERIENCE</a>
-          <a href="#contact">CONTACT</a>
-        </div>
-        <div class="nav-right"><div class="status-widget" id="status-widget"><span id="status-cpu">CPU: 12%</span><span id="status-mem">MEM: 1.2GB / 16GB</span></div></div>
-      </div>
+  <aside class="rack-rail" id="rackRail" aria-label="Section navigation">
+    <div class="rail-brand">M</div>
+    <div class="rail-bus"><div class="rail-bus-fill" id="railBusFill"></div></div>
+    <nav class="rail-slots">
+      <a class="rail-slot" data-target="about" href="#about"><span class="led"></span><span class="rail-num">U1</span><span class="rail-tip">ABOUT.SYS</span></a>
+      <a class="rail-slot" data-target="stack" href="#stack"><span class="led"></span><span class="rail-num">U2</span><span class="rail-tip">STACK.LOG</span></a>
+      <a class="rail-slot" data-target="projects" href="#projects"><span class="led"></span><span class="rail-num">U3</span><span class="rail-tip">PROJECTS.LOG</span></a>
+      <a class="rail-slot" data-target="experience" href="#experience"><span class="led"></span><span class="rail-num">U4</span><span class="rail-tip">EXPERIENCE.LOG</span></a>
+      <a class="rail-slot" data-target="contact" href="#contact"><span class="led"></span><span class="rail-num">U5</span><span class="rail-tip">CONTACT.CFG</span></a>
     </nav>
+    <div class="rail-status"><span class="led led--ok led--pulse"></span>ONLINE</div>
+  </aside>
 
-    <main id="top">
-      <section class="hero">
-        <div class="wrap window-card terminal-hero" data-window-id="hero-window">
-          <div class="window-bar">
-            <div class="lights"></div>
-            <div class="window-title">mason_grajczyk_portfolio.app</div>
-            <div class="title-controls hero-controls">
-              <button class="title-control" data-action="minimize" aria-label="Minimize window">[_]</button>
-              <button class="title-control" data-action="maximize" aria-label="Maximize window">[□]</button>
-              <button class="title-control" data-action="close" aria-label="Close window">[x]</button>
-            </div>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a href="#top" class="brand"><span class="led led--signal led--pulse"></span>MAZON.SYSTEMS</a>
+      <nav class="toplinks">
+        <a href="#about">ABOUT</a>
+        <a href="#stack">STACK</a>
+        <a href="#projects">PROJECTS</a>
+        <a href="#experience">EXPERIENCE</a>
+        <a href="#contact">CONTACT</a>
+      </nav>
+      <div class="topmeta">
+        <span id="clock">00:00:00</span>
+        <span class="status-chip"><span class="led led--ok"></span>SYS OK</span>
+      </div>
+    </div>
+    <div class="topbar-progress"><div class="topbar-progress-fill" id="topProgressFill"></div></div>
+  </header>
+
+  <main id="top">
+    <section class="hero" id="hero">
+      <div class="wrap hero-grid">
+        <div class="runit hero-main" data-runit data-boot-side="left">
+          <div class="runit-label"><span class="led led--signal led--pulse"></span>CHASSIS_HEAD / MASON.SYS
+            <span class="runit-controls"><button data-action="minimize" aria-label="Minimize">_</button><button data-action="maximize" aria-label="Maximize">□</button><button data-action="close" aria-label="Close">x</button></span>
           </div>
-
-          <div class="hero-grid">
-            <div class="hero-main">
-              <div class="status-line">&gt; SYSTEMS_ENGINEERING / PRACTICAL_TECH / PROBLEM_SOLVING</div>
-              <div class="terminal-shell">
-                <div class="terminal-output" id="terminal-output"></div>
-                <div class="terminal-line">
-                  <span class="terminal-prompt">admin@mazon.systems:~$</span>
-                  <input id="terminal-input" class="terminal-input" type="text" spellcheck="false" autocomplete="off" aria-label="Terminal command input" />
-                </div>
-              </div>
-            </div>
-
-            <aside class="hero-side window-collection">
-              <div class="window-card side-pane" data-window-id="focus-pane">
-                <div class="window-bar">
-                  <div class="lights">
-                    <button class="light red" data-action="close" aria-label="Close window"></button>
-                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                  </div>
-                  <div class="window-title">focus.txt</div>
-                </div>
-                <div class="side-content">
-                  <div class="label">Role focus</div>
-                  <strong>IT, systems, engineering, technical operations</strong>
-                  <span class="muted">Best fit for work that values reliability over fluff.</span>
-                </div>
-              </div>
-
-              <div class="window-card side-pane" data-window-id="education-pane">
-                <div class="window-bar">
-                  <div class="lights">
-                    <button class="light red" data-action="close" aria-label="Close window"></button>
-                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                  </div>
-                  <div class="window-title">education.log</div>
-                </div>
-                <div class="side-content">
-                  <div class="label">Education</div>
-                  <strong>B.S. Computer Engineering</strong>
-                  <span class="muted">North Dakota State University — Fargo, ND</span>
-                </div>
-              </div>
-
-              <div class="window-card side-pane" data-window-id="contact-pane">
-                <div class="window-bar">
-                  <div class="lights">
-                    <button class="light red" data-action="close" aria-label="Close window"></button>
-                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                  </div>
-                  <div class="window-title">contact.cfg</div>
-                </div>
-                <div class="side-content">
-                  <div class="label">Contact</div>
-                  <strong><a class="small-link" href="mailto:masongrajczyk@icloud.com">masongrajczyk@icloud.com</a></strong>
-                  <span class="muted"><a class="small-link" href="tel:7636883442">(763) 688-3442</a></span>
-                </div>
-              </div>
-
-              <div class="window-card side-pane" data-window-id="portrait-pane">
-                <div class="window-bar">
-                  <div class="lights">
-                    <button class="light red" data-action="close" aria-label="Close window"></button>
-                    <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                    <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                  </div>
-                  <div class="window-title">portrait.jpg</div>
-                </div>
-                <div class="portrait-wrap">
-                  <img src="./NDSU_Fall2025-395.jpg" alt="Portrait of Mason Grajczyk" />
-                </div>
-              </div>
-            </aside>
+          <h1 class="nameplate">MASON<span>GRAJCZYK</span></h1>
+          <p class="hero-role">// SYSTEMS ENGINEERING &middot; SELF-HOSTED INFRASTRUCTURE &middot; DIAGNOSTICS</p>
+          <p class="hero-bio">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>
+          <p class="hero-bio">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>
+          <div class="hero-badges">
+            <span class="badge">SELF-HOSTED SYSTEMS</span>
+            <span class="badge">CONTAINERIZED DEPLOYMENTS</span>
+            <span class="badge">HARDWARE + SOFTWARE</span>
+          </div>
+          <div class="cta-row">
+            <a class="btn btn-signal" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
+            <a class="btn btn-outline" href="#projects">View Project Log</a>
           </div>
         </div>
-      </section>
 
-      <section id="about">
-        <div class="wrap">
-          <div class="section-head">
-            <div class="section-tag">ABOUT</div>
-            <div class="section-copy">
-              <h2>Practical technical work, end to end.</h2>
-              <p>I do my best work in environments where things need to function cleanly and consistently — whether that means troubleshooting systems, organizing complex information, deploying software, or working through detailed technical problems patiently.</p>
+        <aside class="hero-side">
+          <div class="runit" data-runit data-boot-side="right">
+            <div class="runit-label"><span class="led led--ok"></span>TELEMETRY</div>
+            <dl class="telemetry-grid telemetry">
+              <div><dt>Status</dt><dd>Online</dd></div>
+              <div><dt>Uptime</dt><dd id="telUptime">00:00:00</dd></div>
+              <div><dt>Role</dt><dd>CMPE Student</dd></div>
+              <div><dt>Base</dt><dd>Fargo, ND</dd></div>
+              <div><dt>School</dt><dd>NDSU</dd></div>
+              <div><dt>Build</dt><dd>2026.07</dd></div>
+            </dl>
+          </div>
+          <div class="runit" data-runit data-boot-side="right">
+            <div class="runit-label"><span class="led led--signal"></span>BAY_01 / PORTRAIT</div>
+            <div class="bay-frame"><img src="./NDSU_Fall2025-395.jpg" alt="Portrait of Mason Grajczyk" /></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U1 / ABOUT.SYS</div>
+            <h2>Practical technical work, end to end.</h2>
+          </div>
+          <p class="section-desc">I do my best work where things need to function cleanly and consistently — troubleshooting, deploying, and organizing complex systems.</p>
+        </div>
+        <div class="grid-2">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>how_i_work.log</div>
+            <h3>How I Work</h3>
+            <p>I like structure, clear systems, and solving problems without making them more complicated than they need to be. I'm steady with detail-heavy work and comfortable moving between software, hardware, and operations.</p>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>what_i_build.log</div>
+            <h3>What I Like Building</h3>
+            <p>Self-hosted infrastructure, deployment workflows, stable software environments, and technical setups where reliability actually matters.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U2 / STACK.LOG</div>
+            <h2>Tools and strengths.</h2>
+          </div>
+          <p class="section-desc">The tools, systems, and strengths I'm most confident working with.</p>
+        </div>
+        <div class="grid-2">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>technical_stack.json</div>
+            <h3>Programming + Technical</h3>
+            <div class="chips">
+              <span class="chip" data-tooltip="NAME: Java&#10;SYNOPSIS: Object-oriented programming language for structured software development and systems logic.">JAVA</span>
+              <span class="chip" data-tooltip="NAME: VHDL&#10;SYNOPSIS: Hardware description language used for digital logic design and engineering coursework.">VHDL</span>
+              <span class="chip" data-tooltip="NAME: MATLAB&#10;SYNOPSIS: Numerical computing environment for analysis, simulation, and engineering workflows.">MATLAB</span>
+              <span class="chip" data-tooltip="NAME: System Configuration&#10;SYNOPSIS: Setting up operating environments, services, dependencies, and runtime behavior so systems stay usable.">SYSTEM CONFIGURATION</span>
+              <span class="chip" data-tooltip="NAME: Software Deployment&#10;SYNOPSIS: Moving code or services into working environments with stability and repeatability in mind.">SOFTWARE DEPLOYMENT</span>
+              <span class="chip" data-tooltip="NAME: Containerization&#10;SYNOPSIS: Isolating services and applications in controlled, reproducible runtime environments.">CONTAINERIZATION</span>
+              <span class="chip" data-tooltip="NAME: Virtual Environments&#10;SYNOPSIS: Segmented software environments used to prevent dependency conflicts and deployment drift.">VIRTUAL ENVIRONMENTS</span>
+              <span class="chip" data-tooltip="NAME: System Diagnostics&#10;SYNOPSIS: Identifying faults, tracing failures, and narrowing down root causes in technical systems.">SYSTEM DIAGNOSTICS</span>
+              <span class="chip" data-tooltip="NAME: Hardware Troubleshooting&#10;SYNOPSIS: Diagnosing physical system issues and restoring working configurations.">HARDWARE TROUBLESHOOTING</span>
+              <span class="chip" data-tooltip="NAME: Custom PC Assembly&#10;SYNOPSIS: Building and validating complete computer systems with an eye for compatibility and reliability.">CUSTOM PC ASSEMBLY</span>
             </div>
           </div>
-
-          <div class="content-grid window-collection">
-            <div class="window-card" data-window-id="how-i-work">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">how_i_work.md</div>
-              </div>
-              <div class="window-content">
-                <h3>HOW I WORK</h3>
-                <p class="muted">I like structure, clear systems, and solving problems without making them more complicated than they need to be. I’m steady with detail-heavy work and comfortable moving between software, hardware, and operations.</p>
-              </div>
-            </div>
-
-            <div class="window-card" data-window-id="what-i-build">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">what_i_build.md</div>
-              </div>
-              <div class="window-content">
-                <h3>WHAT I LIKE BUILDING</h3>
-                <p class="muted">Self-hosted infrastructure, deployment workflows, stable software environments, and technical setups where reliability actually matters.</p>
-              </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>professional_traits.json</div>
+            <h3>Professional</h3>
+            <div class="chips">
+              <span class="chip" data-tooltip="NAME: Problem-Solving&#10;SYNOPSIS: Working through technical or operational issues logically until the system is usable again.">PROBLEM-SOLVING</span>
+              <span class="chip" data-tooltip="NAME: Operational Management&#10;SYNOPSIS: Keeping workflows organized, supplied, and moving correctly day to day.">OPERATIONAL MANAGEMENT</span>
+              <span class="chip" data-tooltip="NAME: Quality Control&#10;SYNOPSIS: Checking equipment, outputs, or workflows for consistency, function, and correctness.">QUALITY CONTROL</span>
+              <span class="chip" data-tooltip="NAME: Safety Compliance&#10;SYNOPSIS: Working inside environments where procedures, standards, and risk management matter.">SAFETY COMPLIANCE</span>
+              <span class="chip" data-tooltip="NAME: Adaptability&#10;SYNOPSIS: Shifting between fast-paced environments, tools, and responsibilities without losing reliability.">ADAPTABILITY</span>
+              <span class="chip" data-tooltip="NAME: Data Analysis&#10;SYNOPSIS: Pulling together information from multiple sources and making it usable.">DATA ANALYSIS</span>
+              <span class="chip" data-tooltip="NAME: Documentation Accuracy&#10;SYNOPSIS: Maintaining clean records and reducing errors in high-detail work.">DOCUMENTATION ACCURACY</span>
+              <span class="chip" data-tooltip="NAME: Workflow Organization&#10;SYNOPSIS: Structuring tasks and systems so the work stays clear, efficient, and repeatable.">WORKFLOW ORGANIZATION</span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section id="stack">
-        <div class="wrap">
-          <div class="section-head">
-            <div class="section-tag">STACK</div>
-            <div class="section-copy">
-              <h2>Tools and strengths.</h2>
-              <p>The tools, systems, and strengths I’m most confident working with.</p>
+    <section id="projects">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U3 / PROJECTS.LOG</div>
+            <h2>Technical work.</h2>
+          </div>
+          <p class="section-desc">A few technical areas I've spent real time building in.</p>
+        </div>
+        <div class="projects-grid">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>project_01.infra</div>
+            <span class="meta">01 / INFRASTRUCTURE</span>
+            <h3>Server Architecture &amp; Deployment</h3>
+            <p>Designed, configured, and managed self-hosted environments using containerization to improve uptime, resource use, and network organization.</p>
+            <div class="project-tags"><span>DEPLOYMENT</span><span>CONTAINERS</span><span>UPTIME</span></div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>project_02.software</div>
+            <span class="meta">02 / SOFTWARE</span>
+            <h3>Software Development &amp; Integration</h3>
+            <p>Built custom software modifications and connected APIs with an emphasis on practical logic, systems thinking, and figuring out how moving parts fit together.</p>
+            <div class="project-tags"><span>APIS</span><span>LOGIC</span><span>INTEGRATION</span></div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>project_03.diagnostics</div>
+            <span class="meta">03 / DIAGNOSTICS</span>
+            <h3>System Diagnostics &amp; Virtualization</h3>
+            <p>Used troubleshooting and isolated environments to resolve software conflicts and support stable deployment of demanding technical tools.</p>
+            <div class="project-tags"><span>TROUBLESHOOTING</span><span>VIRTUALIZATION</span><span>STABILITY</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U4 / EXPERIENCE.LOG</div>
+            <h2>Work across different environments.</h2>
+          </div>
+          <p class="section-desc">Different roles, same pattern: responsibility, accuracy, and staying reliable when the work matters.</p>
+        </div>
+        <div class="experience-list">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>experience_01.log</div>
+            <div class="experience-body">
+              <span class="meta" style="margin-bottom:0">2024 — 2025</span>
+              <div>
+                <h3>Medical Records Technician — OGI</h3>
+                <p style="margin-bottom:0.8rem">Edina, MN</p>
+                <ul>
+                  <li>Managed indexing and electronic storage of critical documentation with strong attention to accuracy.</li>
+                  <li>Resolved discrepancies in patient records and improved reliability of retrieval workflows.</li>
+                  <li>Compiled data from multiple sources into usable records for authorized departments.</li>
+                </ul>
+              </div>
             </div>
           </div>
-
-          <div class="content-grid window-collection">
-            <div class="window-card" data-window-id="technical-stack">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">technical_stack.json</div>
-              </div>
-              <div class="window-content">
-                <h3>PROGRAMMING + TECHNICAL</h3>
-                <div class="chips">
-                  <span class="chip" data-tooltip="NAME: Java&#10;SYNOPSIS: Object-oriented programming language for structured software development and systems logic.">JAVA</span>
-                  <span class="chip" data-tooltip="NAME: VHDL&#10;SYNOPSIS: Hardware description language used for digital logic design and engineering coursework.">VHDL</span>
-                  <span class="chip" data-tooltip="NAME: MATLAB&#10;SYNOPSIS: Numerical computing environment for analysis, simulation, and engineering workflows.">MATLAB</span>
-                  <span class="chip" data-tooltip="NAME: System Configuration&#10;SYNOPSIS: Setting up operating environments, services, dependencies, and runtime behavior so systems stay usable.">SYSTEM CONFIGURATION</span>
-                  <span class="chip" data-tooltip="NAME: Software Deployment&#10;SYNOPSIS: Moving code or services into working environments with stability and repeatability in mind.">SOFTWARE DEPLOYMENT</span>
-                  <span class="chip" data-tooltip="NAME: Containerization&#10;SYNOPSIS: Isolating services and applications in controlled, reproducible runtime environments.">CONTAINERIZATION</span>
-                  <span class="chip" data-tooltip="NAME: Virtual Environments&#10;SYNOPSIS: Segmented software environments used to prevent dependency conflicts and deployment drift.">VIRTUAL ENVIRONMENTS</span>
-                  <span class="chip" data-tooltip="NAME: System Diagnostics&#10;SYNOPSIS: Identifying faults, tracing failures, and narrowing down root causes in technical systems.">SYSTEM DIAGNOSTICS</span>
-                  <span class="chip" data-tooltip="NAME: Hardware Troubleshooting&#10;SYNOPSIS: Diagnosing physical system issues and restoring working configurations. ">HARDWARE TROUBLESHOOTING</span>
-                  <span class="chip" data-tooltip="NAME: Custom PC Assembly&#10;SYNOPSIS: Building and validating complete computer systems with an eye for compatibility and reliability.">CUSTOM PC ASSEMBLY</span>
-                </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>experience_02.log</div>
+            <div class="experience-body">
+              <span class="meta" style="margin-bottom:0">2023 — Current</span>
+              <div>
+                <h3>Outdoor Adventures — NDSU Wellness Center</h3>
+                <p style="margin-bottom:0.8rem">Fargo, ND</p>
+                <ul>
+                  <li>Trained new staff on safety protocols and risk management standards.</li>
+                  <li>Managed inventory, organization, and quality checks on technical outdoor equipment.</li>
+                  <li>Supported dependable daily operations where preparation and safety mattered.</li>
+                </ul>
               </div>
             </div>
-
-            <div class="window-card" data-window-id="professional-traits">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">professional_traits.json</div>
-              </div>
-              <div class="window-content">
-                <h3>PROFESSIONAL</h3>
-                <div class="chips">
-                  <span class="chip" data-tooltip="NAME: Problem-Solving&#10;SYNOPSIS: Working through technical or operational issues logically until the system is usable again.">PROBLEM-SOLVING</span>
-                  <span class="chip" data-tooltip="NAME: Operational Management&#10;SYNOPSIS: Keeping workflows organized, supplied, and moving correctly day to day.">OPERATIONAL MANAGEMENT</span>
-                  <span class="chip" data-tooltip="NAME: Quality Control&#10;SYNOPSIS: Checking equipment, outputs, or workflows for consistency, function, and correctness.">QUALITY CONTROL</span>
-                  <span class="chip" data-tooltip="NAME: Safety Compliance&#10;SYNOPSIS: Working inside environments where procedures, standards, and risk management matter.">SAFETY COMPLIANCE</span>
-                  <span class="chip" data-tooltip="NAME: Adaptability&#10;SYNOPSIS: Shifting between fast-paced environments, tools, and responsibilities without losing reliability.">ADAPTABILITY</span>
-                  <span class="chip" data-tooltip="NAME: Data Analysis&#10;SYNOPSIS: Pulling together information from multiple sources and making it usable.">DATA ANALYSIS</span>
-                  <span class="chip" data-tooltip="NAME: Documentation Accuracy&#10;SYNOPSIS: Maintaining clean records and reducing errors in high-detail work.">DOCUMENTATION ACCURACY</span>
-                  <span class="chip" data-tooltip="NAME: Workflow Organization&#10;SYNOPSIS: Structuring tasks and systems so the work stays clear, efficient, and repeatable.">WORKFLOW ORGANIZATION</span>
-                </div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>experience_03.log</div>
+            <div class="experience-body">
+              <span class="meta" style="margin-bottom:0">2021 — 2025</span>
+              <div>
+                <h3>Meat Clerk — Hy-Vee</h3>
+                <p style="margin-bottom:0.8rem">Plymouth, MN</p>
+                <ul>
+                  <li>Helped manage daily workflow, inventory needs, and organization.</li>
+                  <li>Prepared customer orders accurately while following strict safety and sanitation standards.</li>
+                  <li>Built strong time management and adaptability in a fast-paced environment.</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section id="projects">
-        <div class="wrap">
-          <div class="section-head">
-            <div class="section-tag">PROJECTS</div>
-            <div class="section-copy">
-              <h2>Technical work.</h2>
-              <p>A few technical areas I’ve spent real time building in.</p>
-            </div>
+    <section id="contact">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U5 / CONTACT.CFG</div>
+            <h2>Let's talk.</h2>
           </div>
-
-          <div class="projects-grid window-collection">
-            <div class="window-card" data-window-id="project-one">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">project_01.infra</div>
-              </div>
-              <div class="window-content">
-                <div class="project-meta"><span class="project-num">01</span> / INFRASTRUCTURE</div>
-                <h3>SERVER ARCHITECTURE & DEPLOYMENT</h3>
-                <p class="muted">Designed, configured, and managed self-hosted environments using containerization to improve uptime, resource use, and network organization.</p>
-                <div class="project-tags">
-                  <span>DEPLOYMENT</span>
-                  <span>CONTAINERS</span>
-                  <span>UPTIME</span>
-                </div>
-              </div>
+          <p class="section-desc">Open to opportunities involving systems, IT, engineering, and practical technical problem-solving.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>education.info</div>
+            <h3>B.S. Computer Engineering</h3>
+            <p>North Dakota State University<br>Fargo, North Dakota</p>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>contact.info</div>
+            <h3>Reach Out</h3>
+            <div class="contact-links">
+              <a class="contact-link" href="mailto:masongrajczyk@icloud.com">masongrajczyk@icloud.com</a>
+              <a class="contact-link" href="tel:7636883442">(763) 688-3442</a>
+              <a class="contact-link" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
             </div>
-
-            <div class="window-card" data-window-id="project-two">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">project_02.software</div>
-              </div>
-              <div class="window-content">
-                <div class="project-meta"><span class="project-num">02</span> / SOFTWARE</div>
-                <h3>SOFTWARE DEVELOPMENT & INTEGRATION</h3>
-                <p class="muted">Built custom software modifications and connected APIs with an emphasis on practical logic, systems thinking, and figuring out how moving parts fit together.</p>
-                <div class="project-tags">
-                  <span>APIS</span>
-                  <span>LOGIC</span>
-                  <span>INTEGRATION</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="window-card" data-window-id="project-three">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">project_03.diagnostics</div>
-              </div>
-              <div class="window-content">
-                <div class="project-meta"><span class="project-num">03</span> / DIAGNOSTICS</div>
-                <h3>SYSTEM DIAGNOSTICS & VIRTUALIZATION</h3>
-                <p class="muted">Used troubleshooting and isolated environments to resolve software conflicts and support stable deployment of demanding technical tools.</p>
-                <div class="project-tags">
-                  <span>TROUBLESHOOTING</span>
-                  <span>VIRTUALIZATION</span>
-                  <span>STABILITY</span>
+            <div class="diagnostics">
+              <button class="diag-toggle" id="diagToggle"><span class="led led--ok"></span> Run diagnostics.sh</button>
+              <div class="diag-body" id="diagBody">
+                <div class="diag-output" id="diagOutput"></div>
+                <div class="diag-line">
+                  <span class="diag-prompt">mason@rack:~$</span>
+                  <input class="diag-input" id="diagInput" type="text" spellcheck="false" autocomplete="off" aria-label="Diagnostics command input" />
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  </main>
 
-      <section id="experience">
-        <div class="wrap">
-          <div class="section-head">
-            <div class="section-tag">EXPERIENCE</div>
-            <div class="section-copy">
-              <h2>Work experience across different environments.</h2>
-              <p>Different roles, same pattern: responsibility, accuracy, and staying reliable when the work matters.</p>
-            </div>
-          </div>
+  <footer>
+    <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;">
+      <span>MAZON.SYSTEMS — rack-mounted resume</span>
+      <span>rev. 2026.07</span>
+    </div>
+  </footer>
 
-          <div class="experience-list window-collection">
-            <div class="window-card" data-window-id="experience-one">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">experience_01.log</div>
-              </div>
-              <div class="window-content experience-body">
-                <div class="meta">2024 — 2025</div>
-                <div>
-                  <h3>MEDICAL RECORDS TECHNICIAN — OGI</h3>
-                  <p class="muted">Edina, MN</p>
-                  <ul>
-                    <li>Managed indexing and electronic storage of critical documentation with strong attention to accuracy.</li>
-                    <li>Resolved discrepancies in patient records and improved reliability of retrieval workflows.</li>
-                    <li>Compiled data from multiple sources into usable records for authorized departments.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div class="window-card" data-window-id="experience-two">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">experience_02.log</div>
-              </div>
-              <div class="window-content experience-body">
-                <div class="meta">2023 — CURRENT</div>
-                <div>
-                  <h3>OUTDOOR ADVENTURE'S — NDSU WELLNESS CENTER</h3>
-                  <p class="muted">Fargo, ND</p>
-                  <ul>
-                    <li>Trained new staff on safety protocols and risk management standards.</li>
-                    <li>Managed inventory, organization, and quality checks on technical outdoor equipment.</li>
-                    <li>Supported dependable daily operations where preparation and safety mattered.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div class="window-card" data-window-id="experience-three">
-              <div class="window-bar">
-                <div class="lights">
-                  <button class="light red" data-action="close" aria-label="Close window"></button>
-                  <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                  <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-                </div>
-                <div class="window-title">experience_03.log</div>
-              </div>
-              <div class="window-content experience-body">
-                <div class="meta">2021 — 2025</div>
-                <div>
-                  <h3>MEAT CLERK — HY-VEE</h3>
-                  <p class="muted">Plymouth, MN</p>
-                  <ul>
-                    <li>Helped manage daily workflow, inventory needs, and organization.</li>
-                    <li>Prepared customer orders accurately while following strict safety and sanitation standards.</li>
-                    <li>Built strong time management and adaptability in a fast-paced environment.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="contact">
-        <div class="wrap contact-grid window-collection">
-          <div class="window-card" data-window-id="education-contact">
-            <div class="window-bar">
-              <div class="lights">
-                <button class="light red" data-action="close" aria-label="Close window"></button>
-                <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-              </div>
-              <div class="window-title">education.info</div>
-            </div>
-            <div class="window-content">
-              <div class="section-tag">EDUCATION</div>
-              <h2>B.S. COMPUTER ENGINEERING</h2>
-              <p class="muted">North Dakota State University<br>Fargo, North Dakota</p>
-            </div>
-          </div>
-
-          <div class="window-card" data-window-id="contact-info">
-            <div class="window-bar">
-              <div class="lights">
-                <button class="light red" data-action="close" aria-label="Close window"></button>
-                <button class="light yellow" data-action="minimize" aria-label="Minimize window"></button>
-                <button class="light green" data-action="maximize" aria-label="Maximize window"></button>
-              </div>
-              <div class="window-title">contact.info</div>
-            </div>
-            <div class="window-content">
-              <div class="section-tag">CONTACT</div>
-              <h2>LET'S TALK</h2>
-              <p class="muted">Open to opportunities involving systems, IT, engineering, and practical technical problem-solving.</p>
-              <div class="contact-links">
-                <a class="contact-link" href="mailto:masongrajczyk@icloud.com">masongrajczyk@icloud.com</a>
-                <a class="contact-link" href="tel:7636883442">(763) 688-3442</a>
-                <a class="contact-link" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">OPEN RESUME.PDF</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="wrap">MAZON.SYSTEMS — living os resume site</div>
-    </footer>
-  </div>
-
-  <div class="tooltip-panel" id="tooltip-panel"></div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script>
-    const bootOverlay = document.getElementById('boot-overlay');
-    const bootLog = document.getElementById('boot-log');
-    const siteShell = document.getElementById('site-shell');
-    const terminalOutput = document.getElementById('terminal-output');
-    const terminalInput = document.getElementById('terminal-input');
-    const dock = document.getElementById('dock');
-    const windowOverlay = document.getElementById('window-overlay');
-    const tooltipPanel = document.getElementById('tooltip-panel');
-    const statusCpu = document.getElementById('status-cpu');
-    const statusMem = document.getElementById('status-mem');
-    const windows = [...document.querySelectorAll('.window-card')];
-    const heroWindow = document.querySelector('[data-window-id="hero-window"]');
-    let activeTerminalMode = null;
+    gsap.registerPlugin(ScrollTrigger);
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const body = document.body;
+    const bootEl = document.getElementById('boot');
+    const bootLog = document.getElementById('bootLog');
+    const bootFill = document.getElementById('bootFill');
+    const runits = [...document.querySelectorAll('[data-runit]')];
+    const railSlots = [...document.querySelectorAll('.rail-slot')];
+    const railBusFill = document.getElementById('railBusFill');
+    const topProgressFill = document.getElementById('topProgressFill');
+    const dock = document.getElementById('dock');
+    const runitOverlay = document.getElementById('runitOverlay');
+    const tooltipPanel = document.getElementById('tooltipPanel');
+
+    /* ---------- boot sequence ---------- */
     const bootLines = [
-      '[ OK ] Mounting filesystem...',
-      '[ OK ] Initializing workspace...',
-      '[ OK ] Loading terminal profile...',
-      '[ OK ] Verifying services...',
-      '[ OK ] Starting portfolio daemon...',
-      '[ OK ] Mapping window manager...',
-      '[ OK ] Syncing telemetry...',
-      '[ OK ] Ready.'
+      '[ OK ] mounting /dev/rack0 ...',
+      '[ OK ] powering U1-U5 ...',
+      '[ OK ] linking telemetry bus ...',
+      '[ OK ] verifying uptime daemon ...',
+      '[ OK ] chassis ready.'
     ];
+
+    function finishBoot() {
+      bootEl.classList.add('boot-done');
+      body.classList.remove('boot-active');
+      runHeroEntrance();
+    }
 
     function runBootSequence() {
-      const seen = sessionStorage.getItem('living-os-booted');
-      if (seen) {
-        siteShell.classList.remove('boot-hidden');
-        startTerminalHero();
+      const seen = sessionStorage.getItem('rack-os-booted');
+      if (seen || reduceMotion) {
+        finishBoot();
         return;
       }
-
-      siteShell.classList.add('boot-hidden');
-      bootOverlay.classList.add('active');
-      let index = 0;
-      const lineInterval = 120;
-      const writer = setInterval(() => {
-        if (index < bootLines.length) {
-          bootLog.textContent += bootLines[index] + '\n';
-          index += 1;
-        }
-      }, lineInterval);
-
-      setTimeout(() => {
-        clearInterval(writer);
-        bootOverlay.classList.add('exit');
-        setTimeout(() => {
-          bootOverlay.classList.remove('active', 'exit');
-          sessionStorage.setItem('living-os-booted', '1');
-          siteShell.classList.remove('boot-hidden');
-          startTerminalHero();
-        }, 300);
-      }, 1450);
+      const tl = gsap.timeline({ onComplete: () => {
+        sessionStorage.setItem('rack-os-booted', '1');
+        gsap.to(bootEl, { opacity: 0, duration: 0.35, onComplete: finishBoot });
+      }});
+      bootLines.forEach((line, i) => {
+        tl.call(() => { bootLog.textContent += line + '\n'; }, null, i * 0.28);
+      });
+      tl.to(bootFill, { scaleX: 1, duration: bootLines.length * 0.28, ease: 'power1.inOut' }, 0);
+      tl.to({}, { duration: 0.3 });
     }
 
-    const heroLines = [
-      '<div class="hero-name">MASON <span>GRAJCZYK</span></div>',
-      '<p class="hero-bio">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>',
-      '<p class="hero-bio">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>',
-      `<div class="hero-badges">
-        <span class="badge">SELF-HOSTED SYSTEMS</span>
-        <span class="badge">CONTAINERIZED DEPLOYMENTS</span>
-        <span class="badge">HARDWARE + SOFTWARE</span>
-      </div>`,
-      `<div class="cta-row">
-        <a class="btn btn-primary" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">OPEN RESUME.PDF</a>
-        <a class="btn btn-secondary" href="#projects">VIEW PROJECT INDEX</a>
-      </div>`,
-      `<div class="metrics">
-        <div class="metric"><strong>Systems</strong><span>configuration, deployment, virtualization, and stable environments</span></div>
-        <div class="metric"><strong>Hardware</strong><span>assembly, diagnostics, and troubleshooting when things break</span></div>
-        <div class="metric"><strong>Workflow</strong><span>organized, detail-focused, and steady in structured technical work</span></div>
-      </div>`
-    ];
-
-    function appendTerminalBlock(html) {
-      const block = document.createElement('div');
-      block.className = 'terminal-entry';
-      block.innerHTML = html;
-      terminalOutput.appendChild(block);
+    /* ---------- hero + section entrance ---------- */
+    function runHeroEntrance() {
+      const heroUnits = document.querySelectorAll('.hero [data-runit]');
+      if (reduceMotion) {
+        gsap.set(heroUnits, { opacity: 1, y: 0 });
+      } else {
+        gsap.timeline({ defaults: { duration: 0.8, ease: 'power3.out' } })
+          .to(heroUnits, { opacity: 1, y: 0, stagger: 0.14 });
+      }
+      setupScrollReveals();
+      setupRailTracking();
     }
 
-    function appendTerminalText(text, tone = 'muted') {
-      const line = document.createElement('div');
-      line.className = 'terminal-entry';
-      line.textContent = text;
-      if (tone === 'cyan') line.style.color = 'var(--cyan)';
-      if (tone === 'green') line.style.color = 'var(--green)';
-      terminalOutput.appendChild(line);
-    }
-
-
-    function stopTerminalMode() {
-      if (!activeTerminalMode) return;
-      if (activeTerminalMode.interval) clearInterval(activeTerminalMode.interval);
-      if (activeTerminalMode.element?.isConnected) activeTerminalMode.element.remove();
-      activeTerminalMode = null;
-    }
-
-    function createModeBlock(className) {
-      stopTerminalMode();
-      const block = document.createElement('div');
-      block.className = `terminal-entry terminal-mode ${className}`;
-      terminalOutput.appendChild(block);
-      activeTerminalMode = { element: block, interval: null, type: className };
-      return block;
-    }
-
-    function renderFetchProfile() {
-      stopTerminalMode();
-      revealHeroLines();
-    }
-
-    function runHelp() {
-      appendTerminalBlock(`<pre>AVAILABLE COMMANDS
-help             show this command list
-fetch            print the profile block
-./fetch_profile  same as fetch
-clear            clear terminal output
-neofetch         show expanded system card
-ping             simulate localhost ping
-matrix           start matrix rain mode
-bonsai           grow a tiny terminal tree
-aquarium         launch ascii aquarium
-ndsu             print the NDSU ascii mark
-stop             stop active animation mode</pre>`);
-    }
-
-    function runMatrix() {
-      const block = createModeBlock('matrix');
-      const rows = 18;
-      const blockWidth = Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9));
-      const cols = Math.min(120, blockWidth);
-      const chars = '01<>[]{}$#@%&*+xyz';
-      const streams = Array.from({ length: cols }, () => Math.floor(Math.random() * rows));
-      const draw = () => {
-        const grid = Array.from({ length: rows }, () => Array(cols).fill(' '));
-        streams.forEach((head, x, index) => {
-          for (let y = 0; y < 7; y++) {
-            const row = (head - y + rows) % rows;
-            grid[row][x] = chars[Math.floor(Math.random() * chars.length)];
-          }
-          streams[index] = (head + 1) % rows;
-        });
-        block.textContent = grid.map((row) => row.join('')).join('\n');
-      };
-      draw();
-      activeTerminalMode.interval = setInterval(draw, 110);
-    }
-
-    function runBonsai() {
-      const block = createModeBlock('bonsai');
-      const frames = [
-`          &&&
-         &&&&&
-           ||
-          /||\\
-         //||\\
-        ___||___`,
-`           &&
-         &&&&&&
-        &&&&&&&&
-           ||
-          /||\\
-        __/||\\__`,
-`           &&
-         &&&&&&
-       &&&&&&&&&&
-          _||_
-         / || \\
-       _/  ||  \\_`
-      ];
-      let i = 0;
-      block.textContent = frames[0];
-      activeTerminalMode.interval = setInterval(() => {
-        i = (i + 1) % frames.length;
-        block.textContent = frames[i];
-      }, 700);
-    }
-
-    function runAquarium() {
-      const block = createModeBlock('aquarium');
-      const width = Math.min(110, Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9)));
-      const fish = [
-        { x: 2, y: 4, dir: 1, right: '><((*>', left: '<*)))><' },
-        { x: width - 14, y: 10, dir: -1, right: '><{{(°>', left: '<°)}}><' },
-        { x: Math.floor(width / 2), y: 7, dir: 1, right: '><> ', left: ' <><' }
-      ];
-      const seaweed = [8, Math.floor(width * 0.35), Math.floor(width * 0.62), width - 10];
-      const draw = () => {
-        const rows = Array.from({ length: 16 }, () => Array(width).fill(' '));
-        seaweed.forEach((x, idx) => {
-          for (let y = 10; y < 16; y++) {
-            const sway = ((y + idx) % 2);
-            const px = Math.max(0, Math.min(width - 1, x + sway));
-            rows[y][px] = '|';
-          }
-        });
-        fish.forEach((f) => {
-          const art = f.dir === 1 ? f.right : f.left;
-          for (let i = 0; i < art.length; i++) {
-            const x = f.x + i;
-            if (x >= 0 && x < width && f.y >= 0 && f.y < rows.length) rows[f.y][x] = art[i];
-          }
-          f.x += f.dir;
-          if (f.x <= 0 || f.x >= width - art.length) f.dir *= -1;
-          if (Math.random() > 0.76) f.y += Math.random() > 0.5 ? 1 : -1;
-          f.y = Math.max(2, Math.min(12, f.y));
-        });
-        rows[15] = Array(width).fill('~');
-        block.textContent = rows.map((row) => row.join('')).join('\n');
-      };
-      draw();
-      activeTerminalMode.interval = setInterval(draw, 240);
-    }
-
-
-    function runNDSU() {
-      appendTerminalBlock(`<pre>
-
-
-
-
-
-
-
-
-
-          ----++----+##++--- ----
-        --+####################-- ----+--##+-
-        --+########+------+#########---+#########+-
-        --+###----+#####++###############+..-+####+-
-        ------++####+###########################+..-#+--+##+-
-        -#########################################-.+#---+##+-
-        -++++- -++++-++++++++####++###++++++++--++++-+######+++--##+--
-        --####+ +####+#########+-########-####--+####+##-----+###-+##+-
-        -#####-###+--###+-+###-####--##--####--###++###+-------++##+-
-        -+#########--+###--+###--#####+---###+-+###+######+---+--+#-
-        -###+#####---###+--###+---+####+-####--############----####- -+#++-
-        -+###-+####--+###+####++##+-+###++###+-+###+#######--+#+-+##-+##++-#-
-        -####+ +###+-#########--########++-########-########+-++###+---++--.+#-
-        ------ -------------- ------++#####+++++########--#####+- ++-#---+#-
-        --+#################- --++-- -+#--+#+-
-        --##########-###+- -++-
-        -+######+---+-- ----
-        -###+--- -
-        ---</pre>`);
-    }
-
-    function handleCommand(raw) {
-      const command = raw.trim();
-      if (!command) return;
-
-      appendTerminalText(`admin@mazon.systems:~$ ${command}`, 'green');
-
-      if (command === 'clear') {
-        stopTerminalMode();
-        terminalOutput.innerHTML = '';
+    function setupScrollReveals() {
+      const belowFold = runits.filter(el => !el.closest('.hero'));
+      if (reduceMotion) {
+        gsap.set(belowFold, { opacity: 1, y: 0 });
         return;
       }
-
-      if (command === 'help') {
-        runHelp();
-        return;
-      }
-
-      if (command === 'fetch' || command === './fetch_profile') {
-        renderFetchProfile();
-        return;
-      }
-
-      if (command === 'matrix') {
-        runMatrix();
-        return;
-      }
-
-      if (command === 'bonsai') {
-        runBonsai();
-        return;
-      }
-
-      if (command === 'aquarium') {
-        runAquarium();
-        return;
-      }
-
-      if (command === 'ndsu') {
-        runNDSU();
-        return;
-      }
-
-      if (command === 'stop') {
-        stopTerminalMode();
-        appendTerminalText('stopped active terminal mode', 'cyan');
-        return;
-      }
-
-      if (command === 'neofetch') {
-        appendTerminalBlock(`<pre>
-███╗   ███╗   Mason Grajczyk
-████╗ ████║   ─────────────────────────
-██╔████╔██║   role: Computer Engineering student
-██║╚██╔╝██║   focus: systems / deployment / troubleshooting
-██║ ╚═╝ ██║   stack: Java / VHDL / MATLAB / Docker
-╚═╝     ╚═╝   infra: self-hosting / containerization / virtualization
-               school: North Dakota State University
-               location: Wayzata, MN / Fargo, ND
-               status: looking for technical opportunities
-</pre>`);
-        return;
-      }
-
-      if (command === 'ping') {
-        appendTerminalText('64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.034 ms', 'cyan');
-        return;
-      }
-
-      appendTerminalText(`command not found: ${command}`);
-    }
-
-    function applyWindowChrome() {
-      windows.forEach((win) => {
-        if (win === heroWindow) return;
-        const bar = win.querySelector('.window-bar');
-        const lights = bar?.querySelector('.lights');
-        if (!bar || !lights) return;
-        lights.innerHTML = '';
-        const controls = document.createElement('div');
-        controls.className = 'title-controls';
-        controls.innerHTML = `
-          <button class="title-control" data-action="minimize" aria-label="Minimize window">[_]</button>
-          <button class="title-control" data-action="maximize" aria-label="Maximize window">[□]</button>
-          <button class="title-control" data-action="close" aria-label="Close window">[x]</button>
-        `;
-        bar.appendChild(controls);
+      ScrollTrigger.batch(belowFold, {
+        start: 'top 88%',
+        once: true,
+        onEnter: (batch) => gsap.to(batch, { opacity: 1, y: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out' })
       });
     }
 
-    function updateTooltipPositionForChip(chip) {
+    function setupRailTracking() {
+      const sectionIds = ['about', 'stack', 'projects', 'experience', 'contact'];
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top center',
+          end: 'bottom center',
+          toggleClass: { targets: `.rail-slot[data-target="${id}"]`, className: 'is-active' }
+        });
+      });
+
+      ScrollTrigger.create({
+        trigger: 'main',
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          const p = self.progress;
+          if (railBusFill) railBusFill.style.transform = `scaleY(${p})`;
+          if (topProgressFill) topProgressFill.style.width = `${(p * 100).toFixed(1)}%`;
+        }
+      });
+    }
+
+    /* ---------- uptime + clock ---------- */
+    const bootTime = Date.now();
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function tick() {
+      const elapsed = Math.floor((Date.now() - bootTime) / 1000);
+      const h = pad(Math.floor(elapsed / 3600));
+      const m = pad(Math.floor((elapsed % 3600) / 60));
+      const s = pad(elapsed % 60);
+      const el = document.getElementById('telUptime');
+      if (el) el.textContent = `${h}:${m}:${s}`;
+      const now = new Date();
+      const clock = document.getElementById('clock');
+      if (clock) clock.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+    setInterval(tick, 1000);
+    tick();
+
+    /* ---------- tooltips ---------- */
+    function positionTooltip(chip) {
       const chipRect = chip.getBoundingClientRect();
       const rect = tooltipPanel.getBoundingClientRect();
-      let left = chipRect.left + (chipRect.width / 2) - (rect.width / 2);
-      let top = chipRect.top - rect.height - 14;
-      if (left < 0) left = 10;
+      let left = chipRect.left + chipRect.width / 2 - rect.width / 2;
+      let top = chipRect.top - rect.height - 12;
+      if (left < 10) left = 10;
       if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 10;
-      if (top < 10) top = chipRect.bottom + 14;
+      if (top < 10) top = chipRect.bottom + 12;
       tooltipPanel.style.left = `${left}px`;
       tooltipPanel.style.top = `${top}px`;
     }
 
-    function setupTooltips() {
-      document.querySelectorAll('.chip[data-tooltip]').forEach((chip) => {
-        chip.addEventListener('mouseenter', () => {
-          tooltipPanel.textContent = chip.dataset.tooltip;
-          tooltipPanel.classList.add('visible');
-          updateTooltipPositionForChip(chip);
-        });
-        chip.addEventListener('mouseleave', () => {
-          tooltipPanel.classList.remove('visible');
-        });
+    document.querySelectorAll('.chip[data-tooltip]').forEach((chip) => {
+      chip.addEventListener('mouseenter', () => {
+        tooltipPanel.textContent = chip.dataset.tooltip;
+        tooltipPanel.classList.add('visible');
+        positionTooltip(chip);
       });
-    }
-
-    function startStatusWidget() {
-      let cpu = 12;
-      let mem = 1.2;
-      setInterval(() => {
-        cpu = Math.max(9, Math.min(18, cpu + (Math.random() > 0.5 ? 1 : -1)));
-        mem = Math.max(1.1, Math.min(1.6, +(mem + (Math.random() > 0.5 ? 0.1 : -0.1)).toFixed(1)));
-        statusCpu.textContent = `CPU: ${cpu}%`;
-        statusMem.textContent = `MEM: ${mem.toFixed(1)}GB / 16GB`;
-      }, 1800);
-    }
-
-    function setActiveWindow(win) {
-      windows.forEach((item) => item.classList.toggle('active-window', item === win));
-    }
-
-    function setupWindowFocus() {
-      windows.forEach((win) => {
-        win.addEventListener('mouseenter', () => setActiveWindow(win));
-        win.addEventListener('click', () => setActiveWindow(win));
-      });
-    }
-
-    function revealHeroLines(index = 0) {
-      if (index >= heroLines.length) {
-        terminalInput.disabled = false;
-        terminalInput.focus();
-        return;
-      }
-      appendTerminalBlock(heroLines[index]);
-      setTimeout(() => revealHeroLines(index + 1), 150);
-    }
-
-    function startTerminalHero() {
-      terminalInput.disabled = true;
-      const sequence = './fetch_profile';
-      let typed = '';
-      let i = 0;
-      const typeTimer = setInterval(() => {
-        typed += sequence[i] || '';
-        terminalInput.value = typed;
-        i += 1;
-        if (i > sequence.length - 1) {
-          clearInterval(typeTimer);
-          setTimeout(() => {
-            appendTerminalText(`admin@mazon.systems:~$ ${sequence}`, 'green');
-            terminalInput.value = '';
-            revealHeroLines();
-          }, 180);
-        }
-      }, 45);
-    }
-
-    terminalInput.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter') return;
-      const value = terminalInput.value;
-      terminalInput.value = '';
-      handleCommand(value);
+      chip.addEventListener('mouseleave', () => tooltipPanel.classList.remove('visible'));
     });
 
+    /* ---------- runit window controls ---------- */
     function syncDock() {
       dock.innerHTML = '';
-      windows.forEach((win) => {
-        if (win.classList.contains('hidden') || win.classList.contains('minimized')) {
-          const title = win.querySelector('.window-title')?.textContent?.trim() || 'window';
-          const button = document.createElement('button');
-          button.className = 'dock-item';
-          button.textContent = `restore ${title}`;
-          button.addEventListener('click', () => restoreWindow(win));
-          dock.appendChild(button);
+      runits.forEach((win) => {
+        if (win.classList.contains('rhidden') || win.classList.contains('minimized')) {
+          const label = win.querySelector('.runit-label')?.textContent?.trim().split('\n')[0] || 'panel';
+          const btn = document.createElement('button');
+          btn.className = 'dock-item';
+          btn.textContent = `restore ${label}`;
+          btn.addEventListener('click', () => restoreRunit(win));
+          dock.appendChild(btn);
         }
       });
     }
 
-    function restoreWindow(win) {
-      win.classList.remove('hidden', 'minimized');
-      if (win.classList.contains('maximized')) {
-        windowOverlay.classList.add('active');
-      }
+    function restoreRunit(win) {
+      win.classList.remove('rhidden', 'minimized');
+      if (win.classList.contains('maximized')) runitOverlay.classList.add('active');
       syncDock();
     }
 
     function clearMaximized(except = null) {
-      windows.forEach((win) => {
-        if (win !== except) win.classList.remove('maximized');
-      });
-      const anyMax = windows.some((win) => win.classList.contains('maximized'));
-      windowOverlay.classList.toggle('active', anyMax);
-    }
-
-    function toggleWindowAction(win, action) {
-      if (action === 'maximize') {
-        const willMaximize = !win.classList.contains('maximized');
-        clearMaximized(willMaximize ? win : null);
-        win.classList.toggle('maximized', willMaximize);
-      }
-
-      if (action === 'minimize') {
-        win.classList.remove('hidden');
-        win.classList.toggle('minimized');
-      }
-
-      if (action === 'close') {
-        win.classList.remove('maximized');
-        win.classList.remove('minimized');
-        win.classList.toggle('hidden');
-        clearMaximized();
-      }
-
-      syncDock();
+      runits.forEach((win) => { if (win !== except) win.classList.remove('maximized'); });
+      const any = runits.some((win) => win.classList.contains('maximized'));
+      runitOverlay.classList.toggle('active', any);
     }
 
     document.addEventListener('click', (event) => {
       const control = event.target.closest('[data-action]');
       if (!control) return;
-      const win = control.closest('.window-card');
+      const win = control.closest('[data-runit]');
       if (!win) return;
       const action = control.dataset.action;
-      toggleWindowAction(win, action);
-    });
-
-    windowOverlay.addEventListener('click', () => {
-      clearMaximized();
+      if (action === 'maximize') {
+        const willMax = !win.classList.contains('maximized');
+        clearMaximized(willMax ? win : null);
+        win.classList.toggle('maximized', willMax);
+      }
+      if (action === 'minimize') {
+        win.classList.remove('rhidden');
+        win.classList.toggle('minimized');
+      }
+      if (action === 'close') {
+        win.classList.remove('maximized', 'minimized');
+        win.classList.toggle('rhidden');
+        clearMaximized();
+      }
       syncDock();
     });
 
-    applyWindowChrome();
-    setupTooltips();
-    setupWindowFocus();
-    startStatusWidget();
+    runitOverlay.addEventListener('click', () => { clearMaximized(); syncDock(); });
+
+    /* ---------- diagnostics console ---------- */
+    const diagToggle = document.getElementById('diagToggle');
+    const diagBody = document.getElementById('diagBody');
+    const diagOutput = document.getElementById('diagOutput');
+    const diagInput = document.getElementById('diagInput');
+    let diagMode = null;
+
+    diagToggle.addEventListener('click', () => {
+      diagBody.classList.toggle('open');
+      if (diagBody.classList.contains('open')) {
+        if (!diagOutput.textContent) {
+          diagOutput.innerHTML = 'diagnostics console ready. type <span class="diag-green">help</span> for commands.\n';
+        }
+        diagInput.focus();
+      }
+    });
+
+    function diagPrint(text, cls) {
+      const span = document.createElement('div');
+      if (cls) span.className = cls;
+      span.textContent = text;
+      diagOutput.appendChild(span);
+      diagOutput.scrollTop = diagOutput.scrollHeight;
+    }
+
+    function stopDiagMode() {
+      if (!diagMode) return;
+      clearInterval(diagMode.interval);
+      diagMode.el.remove();
+      diagMode = null;
+    }
+
+    function startDiagMode() {
+      stopDiagMode();
+      const el = document.createElement('div');
+      el.className = 'diag-signal';
+      diagOutput.appendChild(el);
+      diagMode = { el, interval: null };
+      return el;
+    }
+
+    function runMatrix() {
+      const el = startDiagMode();
+      const cols = 48, rows = 8;
+      const chars = '01<>[]{}#@%&';
+      const streams = Array.from({ length: cols }, () => Math.floor(Math.random() * rows));
+      diagMode.interval = setInterval(() => {
+        const grid = Array.from({ length: rows }, () => Array(cols).fill(' '));
+        streams.forEach((head, x, idx) => {
+          for (let y = 0; y < 5; y++) {
+            const row = (head - y + rows) % rows;
+            grid[row][x] = chars[Math.floor(Math.random() * chars.length)];
+          }
+          streams[idx] = (head + 1) % rows;
+        });
+        el.textContent = grid.map((r) => r.join('')).join('\n');
+      }, 110);
+    }
+
+    function handleDiagCommand(raw) {
+      const cmd = raw.trim();
+      if (!cmd) return;
+      diagPrint(`mason@rack:~$ ${cmd}`, 'diag-green');
+      if (cmd === 'help') {
+        diagPrint('commands: help, status, uptime, matrix, stop, clear');
+      } else if (cmd === 'status') {
+        diagPrint('rack: online | U1-U5: nominal | telemetry bus: linked', 'diag-green');
+      } else if (cmd === 'uptime') {
+        diagPrint(document.getElementById('telUptime').textContent, 'diag-green');
+      } else if (cmd === 'matrix') {
+        runMatrix();
+      } else if (cmd === 'stop') {
+        stopDiagMode();
+        diagPrint('stopped active mode.');
+      } else if (cmd === 'clear') {
+        stopDiagMode();
+        diagOutput.innerHTML = '';
+      } else {
+        diagPrint(`command not found: ${cmd}`);
+      }
+    }
+
+    diagInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const val = diagInput.value;
+      diagInput.value = '';
+      handleDiagCommand(val);
+    });
+
     runBootSequence();
-    syncDock();
   </script>
 </body>
 </html>
