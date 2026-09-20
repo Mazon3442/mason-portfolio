@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mason Grajczyk — Systems Engineering</title>
+  <meta name="description" content="Portfolio of Mason Grajczyk, Computer Engineering student focused on systems engineering, self-hosted infrastructure, deployment, and hardware diagnostics." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #05070a;
+      --ink-2: #0a0e13;
+      --panel: #12161c;
+      --panel-2: #171c23;
+      --line: #262c34;
+      --line-bright: #3c4550;
+      --paper: #eef1f6;
+      --paper-dim: #c6cdda;
+      --muted: #838da0;
+      --accent: #ff2e9a;
+      --accent-dim: #c21f74;
+      --accent-soft: rgba(255, 46, 154, 0.14);
+      --term: #39ff88;
+      --term-dim: #1fae5c;
+      --term-soft: rgba(57, 255, 136, 0.14);
+      --ok: #4cf3ff;
+      --ok-soft: rgba(76, 243, 255, 0.14);
+      --warn: #ffce4a;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --sans: "IBM Plex Sans", system-ui, sans-serif;
+      --max: 1180px;
+      --rail-w: 64px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    body {
+      margin: 0;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 34px 34px;
+    }
+
+    #bgFx {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+      mix-blend-mode: screen;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    button { font: inherit; }
+
+    .wrap { width: min(calc(100% - 2.4rem), var(--max)); margin: 0 auto; position: relative; z-index: 1; }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ---------- shared type ---------- */
+    .eyebrow, .rail-num, .runit-label, .brand, .toplinks, .topmeta, .chip, .btn, .telemetry dt, .telemetry dd, .badge, .project-tags span, .meta {
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1, h2, h3 { margin: 0; font-family: var(--mono); font-weight: 700; }
+
+    p { line-height: 1.7; color: var(--muted); margin: 0 0 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ---------- LEDs ---------- */
+    .led {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--line-bright);
+      display: inline-block;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.02);
+    }
+
+    .led--accent { background: var(--accent); box-shadow: 0 0 8px rgba(255, 46, 154, 0.7); }
+    .led--ok { background: var(--ok); box-shadow: 0 0 8px rgba(76, 243, 255, 0.6); }
+    .led--term { background: var(--term); box-shadow: 0 0 8px rgba(57, 255, 136, 0.6); }
+
+    @keyframes ledPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .led--pulse { animation: ledPulse 2.4s ease-in-out infinite; }
+
+    /* ---------- boot overlay ---------- */
+    #boot {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--ink);
+      color: var(--term);
+      font-family: var(--mono);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    #boot.boot-done { display: none; }
+
+    .boot-panel { width: min(100%, 640px); }
+
+    .boot-log {
+      white-space: pre-wrap;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      min-height: 9rem;
+      margin: 0 0 1rem;
+      text-shadow: 0 0 6px rgba(57, 255, 136, 0.5);
+    }
+
+    .boot-meter {
+      height: 2px;
+      background: var(--line);
+      overflow: hidden;
+    }
+
+    .boot-meter-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--term);
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    body.boot-active { overflow: hidden; }
+
+    /* ---------- rack rail (desktop side nav) ---------- */
+    .rack-rail {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--rail-w);
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.1rem 0;
+    }
+
+    .rail-brand {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-bright);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .rail-bus {
+      width: 2px;
+      flex: 1;
+      background: var(--line);
+      position: relative;
+      margin-bottom: 1.4rem;
+      min-height: 40px;
+    }
+
+    .rail-bus-fill {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: top;
+      height: 100%;
+    }
+
+    .rail-slots {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .rail-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+      transition: color 200ms ease;
+      position: relative;
+    }
+
+    .rail-slot .led { transition: background 200ms ease, box-shadow 200ms ease; }
+
+    .rail-slot .rail-num { font-size: 0.62rem; }
+
+    .rail-slot:hover { color: var(--paper); }
+
+    .rail-slot.is-active { color: var(--accent); }
+    .rail-slot.is-active .led { background: var(--accent); box-shadow: 0 0 8px rgba(255, 46, 154, 0.7); }
+
+    .rail-slot .rail-tip {
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--panel-2);
+      border: 1px solid var(--line-bright);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.68rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 150ms ease;
+    }
+
+    .rail-slot:hover .rail-tip { opacity: 1; }
+
+    .rail-status {
+      margin-top: auto;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      color: var(--ok);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      letter-spacing: 0.12em;
+    }
+
+    @media (max-width: 960px) {
+      .rack-rail { display: none; }
+    }
+
+    /* ---------- topbar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 400;
+      background: var(--ink-2);
+      border-bottom: 1px solid var(--line);
+      margin-left: var(--rail-w);
+    }
+
+    @media (max-width: 960px) {
+      .topbar { margin-left: 0; }
+    }
+
+    .topbar-inner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 0.95rem 0;
+    }
+
+    .brand {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      color: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toplinks {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    .toplinks a { position: relative; padding: 0.15rem 0; }
+    .toplinks a::before { content: "["; opacity: 0; transition: opacity 150ms ease; margin-right: 2px; }
+    .toplinks a::after { content: "]"; opacity: 0; transition: opacity 150ms ease; margin-left: 2px; }
+    .toplinks a:hover { color: var(--accent); }
+    .toplinks a:hover::before, .toplinks a:hover::after { opacity: 1; }
+
+    .topmeta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.68rem;
+      color: var(--muted);
+      justify-self: end;
+    }
+
+    .topmeta .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--ok);
+      border: 1px solid var(--line-bright);
+      padding: 0.3rem 0.5rem;
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        padding: 0.75rem 0;
+      }
+
+      .topmeta { margin-left: auto; }
+
+      .toplinks {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        gap: 1.1rem;
+        padding-bottom: 0.15rem;
+      }
+    }
+
+    .topbar-progress {
+      height: 2px;
+      background: var(--line);
+      display: none;
+    }
+
+    .topbar-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+    }
+
+    @media (max-width: 960px) {
+      .topbar-progress { display: block; }
+    }
+
+    /* ---------- layout shell ---------- */
+    main { margin-left: var(--rail-w); }
+
+    @media (max-width: 960px) {
+      main { margin-left: 0; }
+    }
+
+    section { padding: 5.5rem 0 0; }
+    section:first-of-type { padding-top: 0; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+    }
+
+    .section-head h2 {
+      font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head .section-desc {
+      max-width: 30rem;
+      text-align: right;
+      font-size: 0.86rem;
+      margin: 0;
+    }
+
+    @media (max-width: 720px) {
+      .section-head { flex-direction: column; }
+      .section-head .section-desc { text-align: left; }
+    }
+
+    /* ---------- runit (rack-unit panel) ---------- */
+    .runit {
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid var(--line);
+      position: relative;
+      padding: 1.6rem 1.7rem 1.8rem;
+    }
+
+    .hero .runit {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+
+    .runit::before, .runit::after {
+      content: "";
+      position: absolute;
+      top: 9px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--line-bright);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
+    }
+
+    .runit::before { left: 9px; }
+    .runit::after { right: 9px; }
+
+    .runit-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+
+    .runit-controls {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+      color: var(--muted);
+    }
+
+    .runit-controls button {
+      background: none;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+      font-size: 0.68rem;
+      padding: 0;
+    }
+
+    .runit-controls button:hover { color: var(--accent); }
+
+    .runit h3 {
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0;
+    }
+
+    .runit.maximized {
+      position: fixed;
+      inset: 4vh 4vw;
+      z-index: 2000;
+      overflow-y: auto;
+      max-width: none;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .runit.minimized > *:not(.runit-label) { display: none; }
+    .runit.rhidden { display: none; }
+
+    .runit-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 3, 5, 0.72);
+      backdrop-filter: blur(3px);
+      z-index: 1900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    .runit-overlay.active { opacity: 1; pointer-events: auto; }
+
+    /* ---------- hero ---------- */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
+      gap: 1.1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+
+    .hero-main { padding: 0; overflow: hidden; }
+    .hero-main .runit-label { padding: 1.2rem 1.5rem 0; margin-bottom: 0.9rem; }
+
+    /* ---------- CRT terminal ---------- */
+    .terminal-shell {
+      position: relative;
+      min-height: 30rem;
+      background: #010403;
+      padding: 0 1.5rem 1.5rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .terminal-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: repeating-linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.18) 0px,
+        rgba(0, 0, 0, 0.18) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      mix-blend-mode: multiply;
+    }
+
+    .terminal-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.85), inset 0 0 20px rgba(57, 255, 136, 0.06);
+    }
+
+    @keyframes crtFlicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.94; }
+      94% { opacity: 1; }
+    }
+
+    .terminal-shell { animation: crtFlicker 5s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .terminal-shell { animation: none; }
+      .terminal-shell::before { display: none; }
+    }
+
+    .terminal-output {
+      flex: 1;
+      min-height: 22rem;
+      white-space: pre-wrap;
+      color: var(--term);
+      line-height: 1.7;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      text-shadow: 0 0 5px rgba(57, 255, 136, 0.35);
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-entry {
+      width: 100%;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: termFadeIn 260ms ease forwards;
+    }
+
+    @keyframes termFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-name {
+      position: relative;
+      display: inline-block;
+      font-family: var(--mono);
+      color: var(--paper);
+      font-size: clamp(2.6rem, 7vw, 4.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      margin: 0.4rem 0 1rem;
+    }
+
+    .hero-name .line { display: block; }
+    .hero-name .line.two { color: var(--accent); }
+
+    .hero-name[data-glitch]::before,
+    .hero-name[data-glitch]::after {
+      content: attr(data-glitch);
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      white-space: pre;
+    }
+
+    .hero-name[data-glitch]:hover::before {
+      color: var(--accent);
+      opacity: 0.8;
+      transform: translate(2px, -1px);
+      mix-blend-mode: screen;
+      animation: glitchA 0.5s steps(2, end) infinite;
+    }
+
+    .hero-name[data-glitch]:hover::after {
+      color: var(--ok);
+      opacity: 0.8;
+      transform: translate(-2px, 1px);
+      mix-blend-mode: screen;
+      animation: glitchB 0.4s steps(2, end) infinite;
+    }
+
+    @keyframes glitchA {
+      0% { clip-path: inset(10% 0 70% 0); }
+      50% { clip-path: inset(60% 0 5% 0); }
+      100% { clip-path: inset(30% 0 40% 0); }
+    }
+
+    @keyframes glitchB {
+      0% { clip-path: inset(70% 0 5% 0); }
+      50% { clip-path: inset(15% 0 65% 0); }
+      100% { clip-path: inset(45% 0 20% 0); }
+    }
+
+    .terminal-output .hero-bio {
+      max-width: 44rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+      text-shadow: none;
+    }
+
+    .terminal-mode {
+      width: 100%;
+      margin: 0 0 1rem;
+      padding: 0.85rem 0.9rem;
+      border: 1px solid var(--line-bright);
+      background: rgba(57, 255, 136, 0.03);
+      color: var(--term);
+      font-family: var(--mono);
+      font-size: clamp(0.72rem, 1vw, 0.85rem);
+      line-height: 1.45;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .terminal-mode.bonsai { color: #b8f7c1; }
+    .terminal-mode.aquarium { color: var(--ok); min-height: 12rem; }
+    .terminal-mode.matrix { min-height: 12rem; }
+
+    .terminal-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: auto;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--line);
+      width: 100%;
+      font-family: var(--mono);
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-prompt { color: var(--ok); flex: 0 0 auto; font-size: 0.86rem; }
+
+    .terminal-input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--term);
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      text-shadow: 0 0 5px rgba(57, 255, 136, 0.35);
+    }
+
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 1.3rem 0 1.5rem;
+    }
+
+    .badge {
+      border: 1px solid var(--line-bright);
+      padding: 0.5rem 0.7rem;
+      font-size: 0.68rem;
+      color: var(--paper-dim);
+      text-transform: uppercase;
+    }
+
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.2rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 46px;
+      padding: 0 1.3rem;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 160ms var(--ease-out), background 160ms ease, border-color 160ms ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #16020f;
+      font-weight: 700;
+    }
+
+    .btn-outline {
+      border-color: var(--line-bright);
+      color: var(--paper);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.9rem;
+      margin-top: 0.2rem;
+    }
+
+    .metric {
+      border: 1px solid var(--line-bright);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.8rem 0.9rem;
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-family: var(--mono);
+    }
+
+    .metric span { color: var(--muted); font-size: 0.78rem; font-family: var(--sans); text-shadow: none; }
+
+    @media (max-width: 640px) {
+      .metrics { grid-template-columns: 1fr; }
+    }
+
+    .hero-side { display: grid; gap: 1.1rem; }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem 1rem;
+      margin: 0;
+    }
+
+    .telemetry-grid > div { display: flex; flex-direction: column; gap: 0.25rem; }
+    .telemetry dt { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; }
+    .telemetry dd { font-size: 0.86rem; color: var(--ok); margin: 0; }
+
+    .bay-frame {
+      border: 1px solid var(--line-bright);
+      padding: 0.5rem;
+      background: var(--ink-2);
+    }
+
+    .bay-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: grayscale(0.25) contrast(1.05);
+    }
+
+    /* ---------- about / stack grids ---------- */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.1rem;
+    }
+
+    @media (max-width: 760px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+    .chip {
+      border: 1px solid var(--line-bright);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.5rem 0.7rem;
+      font-size: 0.7rem;
+      color: var(--paper-dim);
+      cursor: default;
+      position: relative;
+      transition: border-color 160ms ease, color 160ms ease;
+    }
+
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    .tooltip-panel {
+      position: fixed;
+      max-width: 300px;
+      padding: 0.8rem 0.9rem;
+      background: var(--panel-2);
+      border: 1px solid var(--line-bright);
+      color: var(--paper-dim);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.6;
+      z-index: 2100;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+
+    .tooltip-panel.visible { opacity: 1; transform: translateY(0); }
+
+    /* ---------- projects ---------- */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.1rem;
+    }
+
+    @media (max-width: 960px) {
+      .projects-grid { grid-template-columns: 1fr; }
+    }
+
+    .project-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.1rem; }
+    .project-tags span {
+      border: 1px solid var(--line);
+      padding: 0.35rem 0.55rem;
+      font-size: 0.66rem;
+      color: var(--muted);
+    }
+
+    .meta { font-size: 0.68rem; color: var(--accent); margin-bottom: 0.8rem; display: block; }
+
+    /* ---------- experience ---------- */
+    .experience-list { display: grid; gap: 1.1rem; }
+    .experience-body { display: grid; grid-template-columns: 150px 1fr; gap: 1.4rem; }
+
+    @media (max-width: 640px) {
+      .experience-body { grid-template-columns: 1fr; }
+    }
+
+    .experience-body ul { padding-left: 1.1rem; list-style: disc; }
+    .experience-body li { line-height: 1.7; color: var(--muted); margin-bottom: 0.4rem; }
+
+    /* ---------- contact ---------- */
+    .contact-grid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 1.1rem; margin-bottom: 4rem; }
+
+    @media (max-width: 760px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+
+    .contact-links { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+    .contact-link {
+      border: 1px solid var(--line-bright);
+      padding: 0.85rem 1rem;
+      color: var(--paper-dim);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .contact-link:hover { border-color: var(--accent); color: var(--accent); transform: translateX(4px); }
+
+    /* ---------- dock ---------- */
+    .dock {
+      position: fixed;
+      left: 50%;
+      bottom: 1.4rem;
+      transform: translateX(-50%);
+      z-index: 1500;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: min(90vw, 700px);
+      padding: 0.5rem;
+      border: 1px solid var(--line-bright);
+      background: var(--panel-2);
+    }
+
+    .dock:empty { display: none; }
+
+    .dock-item {
+      border: 1px solid var(--line-bright);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--accent);
+      padding: 0.5rem 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      cursor: pointer;
+    }
+
+    .dock-item:hover { background: var(--accent-soft); }
+
+    /* ---------- footer ---------- */
+    footer {
+      margin-left: var(--rail-w);
+      padding: 2.2rem 0 3rem;
+      border-top: 1px solid var(--line);
+      margin-top: 5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    @media (max-width: 960px) {
+      footer { margin-left: 0; }
+    }
+
+    /* ---------- reduced motion ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .runit { opacity: 1 !important; transform: none !important; }
+      #boot { display: none !important; }
+      #bgFx { display: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      .terminal-shell { min-height: 24rem; }
+      .terminal-output { min-height: 16rem; }
+    }
+  </style>
+</head>
+<body class="boot-active">
+
+  <canvas id="bgFx"></canvas>
+
+  <div id="boot">
+    <div class="boot-panel">
+      <pre class="boot-log" id="bootLog"></pre>
+      <div class="boot-meter"><div class="boot-meter-fill" id="bootFill"></div></div>
+    </div>
+  </div>
+
+  <div class="runit-overlay" id="runitOverlay"></div>
+  <div class="dock" id="dock"></div>
+  <div class="tooltip-panel" id="tooltipPanel"></div>
+
+  <aside class="rack-rail" id="rackRail" aria-label="Section navigation">
+    <div class="rail-brand">M</div>
+    <div class="rail-bus"><div class="rail-bus-fill" id="railBusFill"></div></div>
+    <nav class="rail-slots">
+      <a class="rail-slot" data-target="about" href="#about"><span class="led"></span><span class="rail-num">U1</span><span class="rail-tip">ABOUT.SYS</span></a>
+      <a class="rail-slot" data-target="stack" href="#stack"><span class="led"></span><span class="rail-num">U2</span><span class="rail-tip">STACK.LOG</span></a>
+      <a class="rail-slot" data-target="projects" href="#projects"><span class="led"></span><span class="rail-num">U3</span><span class="rail-tip">PROJECTS.LOG</span></a>
+      <a class="rail-slot" data-target="experience" href="#experience"><span class="led"></span><span class="rail-num">U4</span><span class="rail-tip">EXPERIENCE.LOG</span></a>
+      <a class="rail-slot" data-target="contact" href="#contact"><span class="led"></span><span class="rail-num">U5</span><span class="rail-tip">CONTACT.CFG</span></a>
+    </nav>
+    <div class="rail-status"><span class="led led--ok led--pulse"></span>ONLINE</div>
+  </aside>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a href="#top" class="brand"><span class="led led--accent led--pulse"></span>MAZON.SYSTEMS</a>
+      <nav class="toplinks">
+        <a href="#about">ABOUT</a>
+        <a href="#stack">STACK</a>
+        <a href="#projects">PROJECTS</a>
+        <a href="#experience">EXPERIENCE</a>
+        <a href="#contact">CONTACT</a>
+      </nav>
+      <div class="topmeta">
+        <span id="clock">00:00:00</span>
+        <span class="status-chip"><span class="led led--ok"></span>SYS OK</span>
+      </div>
+    </div>
+    <div class="topbar-progress"><div class="topbar-progress-fill" id="topProgressFill"></div></div>
+  </header>
+
+  <main id="top">
+    <section class="hero" id="hero">
+      <div class="wrap hero-grid">
+        <div class="runit hero-main" data-runit>
+          <div class="runit-label"><span class="led led--term led--pulse"></span>CHASSIS_HEAD / MASON.SYS
+            <span class="runit-controls"><button data-action="minimize" aria-label="Minimize">_</button><button data-action="maximize" aria-label="Maximize">□</button><button data-action="close" aria-label="Close">x</button></span>
+          </div>
+          <div class="terminal-shell">
+            <div class="terminal-output" id="terminalOutput"></div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">mason@rack:~$</span>
+              <input id="terminalInput" class="terminal-input" type="text" spellcheck="false" autocomplete="off" aria-label="Terminal command input" />
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-side">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led led--ok"></span>TELEMETRY</div>
+            <dl class="telemetry-grid telemetry">
+              <div><dt>Status</dt><dd>Online</dd></div>
+              <div><dt>Uptime</dt><dd id="telUptime">00:00:00</dd></div>
+              <div><dt>Role</dt><dd>CMPE Student</dd></div>
+              <div><dt>Base</dt><dd>Fargo, ND</dd></div>
+              <div><dt>School</dt><dd>NDSU</dd></div>
+              <div><dt>Focus</dt><dd>Systems + Deploy</dd></div>
+            </dl>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led led--accent"></span>BAY_01 / PORTRAIT</div>
+            <div class="bay-frame"><img src="./NDSU_Fall2025-395.jpg" alt="Portrait of Mason Grajczyk" /></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U1 / ABOUT.SYS</div>
+            <h2>Practical technical work, end to end.</h2>
+          </div>
+          <p class="section-desc">I do my best work where things need to function cleanly and consistently — troubleshooting, deploying, and organizing complex systems.</p>
+        </div>
+        <div class="grid-2">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>how_i_work.log</div>
+            <h3>How I Work</h3>
+            <p>I like structure, clear systems, and solving problems without making them more complicated than they need to be. I'm steady with detail-heavy work and comfortable moving between software, hardware, and operations.</p>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>what_i_build.log</div>
+            <h3>What I Like Building</h3>
+            <p>Self-hosted infrastructure, deployment workflows, stable software environments, and technical setups where reliability actually matters.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U2 / STACK.LOG</div>
+            <h2>Tools and strengths.</h2>
+          </div>
+          <p class="section-desc">The tools, systems, and strengths I'm most confident working with.</p>
+        </div>
+        <div class="grid-2">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>technical_stack.json</div>
+            <h3>Programming + Technical</h3>
+            <div class="chips">
+              <span class="chip" data-tooltip="NAME: Java&#10;SYNOPSIS: Object-oriented programming language for structured software development and systems logic.">JAVA</span>
+              <span class="chip" data-tooltip="NAME: VHDL&#10;SYNOPSIS: Hardware description language used for digital logic design and engineering coursework.">VHDL</span>
+              <span class="chip" data-tooltip="NAME: MATLAB&#10;SYNOPSIS: Numerical computing environment for analysis, simulation, and engineering workflows.">MATLAB</span>
+              <span class="chip" data-tooltip="NAME: System Configuration&#10;SYNOPSIS: Setting up operating environments, services, dependencies, and runtime behavior so systems stay usable.">SYSTEM CONFIGURATION</span>
+              <span class="chip" data-tooltip="NAME: Software Deployment&#10;SYNOPSIS: Moving code or services into working environments with stability and repeatability in mind.">SOFTWARE DEPLOYMENT</span>
+              <span class="chip" data-tooltip="NAME: Containerization&#10;SYNOPSIS: Isolating services and applications in controlled, reproducible runtime environments.">CONTAINERIZATION</span>
+              <span class="chip" data-tooltip="NAME: Virtual Environments&#10;SYNOPSIS: Segmented software environments used to prevent dependency conflicts and deployment drift.">VIRTUAL ENVIRONMENTS</span>
+              <span class="chip" data-tooltip="NAME: System Diagnostics&#10;SYNOPSIS: Identifying faults, tracing failures, and narrowing down root causes in technical systems.">SYSTEM DIAGNOSTICS</span>
+              <span class="chip" data-tooltip="NAME: Hardware Troubleshooting&#10;SYNOPSIS: Diagnosing physical system issues and restoring working configurations.">HARDWARE TROUBLESHOOTING</span>
+              <span class="chip" data-tooltip="NAME: Custom PC Assembly&#10;SYNOPSIS: Building and validating complete computer systems with an eye for compatibility and reliability.">CUSTOM PC ASSEMBLY</span>
+            </div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>professional_traits.json</div>
+            <h3>Professional</h3>
+            <div class="chips">
+              <span class="chip" data-tooltip="NAME: Problem-Solving&#10;SYNOPSIS: Working through technical or operational issues logically until the system is usable again.">PROBLEM-SOLVING</span>
+              <span class="chip" data-tooltip="NAME: Operational Management&#10;SYNOPSIS: Keeping workflows organized, supplied, and moving correctly day to day.">OPERATIONAL MANAGEMENT</span>
+              <span class="chip" data-tooltip="NAME: Quality Control&#10;SYNOPSIS: Checking equipment, outputs, or workflows for consistency, function, and correctness.">QUALITY CONTROL</span>
+              <span class="chip" data-tooltip="NAME: Safety Compliance&#10;SYNOPSIS: Working inside environments where procedures, standards, and risk management matter.">SAFETY COMPLIANCE</span>
+              <span class="chip" data-tooltip="NAME: Adaptability&#10;SYNOPSIS: Shifting between fast-paced environments, tools, and responsibilities without losing reliability.">ADAPTABILITY</span>
+              <span class="chip" data-tooltip="NAME: Data Analysis&#10;SYNOPSIS: Pulling together information from multiple sources and making it usable.">DATA ANALYSIS</span>
+              <span class="chip" data-tooltip="NAME: Documentation Accuracy&#10;SYNOPSIS: Maintaining clean records and reducing errors in high-detail work.">DOCUMENTATION ACCURACY</span>
+              <span class="chip" data-tooltip="NAME: Workflow Organization&#10;SYNOPSIS: Structuring tasks and systems so the work stays clear, efficient, and repeatable.">WORKFLOW ORGANIZATION</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U3 / PROJECTS.LOG</div>
+            <h2>Technical work.</h2>
+          </div>
+          <p class="section-desc">A few technical areas I've spent real time building in.</p>
+        </div>
+        <div class="projects-grid">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>project_01.infra</div>
+            <span class="meta">01 / INFRASTRUCTURE</span>
+            <h3>Server Architecture &amp; Deployment</h3>
+            <p>Designed, configured, and managed self-hosted environments using containerization to improve uptime, resource use, and network organization.</p>
+            <div class="project-tags"><span>DEPLOYMENT</span><span>CONTAINERS</span><span>UPTIME</span></div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>project_02.software</div>
+            <span class="meta">02 / SOFTWARE</span>
+            <h3>Software Development &amp; Integration</h3>
+            <p>Built custom software modifications and connected APIs with an emphasis on practical logic, systems thinking, and figuring out how moving parts fit together.</p>
+            <div class="project-tags"><span>APIS</span><span>LOGIC</span><span>INTEGRATION</span></div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>project_03.diagnostics</div>
+            <span class="meta">03 / DIAGNOSTICS</span>
+            <h3>System Diagnostics &amp; Virtualization</h3>
+            <p>Used troubleshooting and isolated environments to resolve software conflicts and support stable deployment of demanding technical tools.</p>
+            <div class="project-tags"><span>TROUBLESHOOTING</span><span>VIRTUALIZATION</span><span>STABILITY</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U4 / EXPERIENCE.LOG</div>
+            <h2>Work across different environments.</h2>
+          </div>
+          <p class="section-desc">Different roles, same pattern: responsibility, accuracy, and staying reliable when the work matters.</p>
+        </div>
+        <div class="experience-list">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>experience_01.log</div>
+            <div class="experience-body">
+              <span class="meta" style="margin-bottom:0">2024 — 2025</span>
+              <div>
+                <h3>Medical Records Technician — OGI</h3>
+                <p style="margin-bottom:0.8rem">Edina, MN</p>
+                <ul>
+                  <li>Managed indexing and electronic storage of critical documentation with strong attention to accuracy.</li>
+                  <li>Resolved discrepancies in patient records and improved reliability of retrieval workflows.</li>
+                  <li>Compiled data from multiple sources into usable records for authorized departments.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>experience_02.log</div>
+            <div class="experience-body">
+              <span class="meta" style="margin-bottom:0">2023 — Current</span>
+              <div>
+                <h3>Outdoor Adventures — NDSU Wellness Center</h3>
+                <p style="margin-bottom:0.8rem">Fargo, ND</p>
+                <ul>
+                  <li>Trained new staff on safety protocols and risk management standards.</li>
+                  <li>Managed inventory, organization, and quality checks on technical outdoor equipment.</li>
+                  <li>Supported dependable daily operations where preparation and safety mattered.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>experience_03.log</div>
+            <div class="experience-body">
+              <span class="meta" style="margin-bottom:0">2021 — 2025</span>
+              <div>
+                <h3>Meat Clerk — Hy-Vee</h3>
+                <p style="margin-bottom:0.8rem">Plymouth, MN</p>
+                <ul>
+                  <li>Helped manage daily workflow, inventory needs, and organization.</li>
+                  <li>Prepared customer orders accurately while following strict safety and sanitation standards.</li>
+                  <li>Built strong time management and adaptability in a fast-paced environment.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">U5 / CONTACT.CFG</div>
+            <h2>Let's talk.</h2>
+          </div>
+          <p class="section-desc">Open to opportunities involving systems, IT, engineering, and practical technical problem-solving.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>education.info</div>
+            <h3>B.S. Computer Engineering</h3>
+            <p>North Dakota State University<br>Fargo, North Dakota</p>
+          </div>
+          <div class="runit" data-runit>
+            <div class="runit-label"><span class="led"></span>contact.info</div>
+            <h3>Reach Out</h3>
+            <div class="contact-links">
+              <a class="contact-link" href="mailto:masongrajczyk@icloud.com">masongrajczyk@icloud.com</a>
+              <a class="contact-link" href="tel:7636883442">(763) 688-3442</a>
+              <a class="contact-link" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
+            </div>
+            <p style="margin-top:1rem;font-size:0.76rem;">Psst — the terminal up top is live. Try <span style="color:var(--term);font-family:var(--mono)">help</span>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;">
+      <span>MAZON.SYSTEMS — rack-mounted resume</span>
+      <span>Fargo, ND</span>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const body = document.body;
+    const bootEl = document.getElementById('boot');
+    const bootLog = document.getElementById('bootLog');
+    const bootFill = document.getElementById('bootFill');
+    const runits = [...document.querySelectorAll('[data-runit]')];
+    const railBusFill = document.getElementById('railBusFill');
+    const topProgressFill = document.getElementById('topProgressFill');
+    const dock = document.getElementById('dock');
+    const runitOverlay = document.getElementById('runitOverlay');
+    const tooltipPanel = document.getElementById('tooltipPanel');
+    const terminalOutput = document.getElementById('terminalOutput');
+    const terminalInput = document.getElementById('terminalInput');
+    let activeTerminalMode = null;
+
+    /* ---------- ambient bg canvas (matrix rain) ---------- */
+    (function bgFx() {
+      const canvas = document.getElementById('bgFx');
+      if (reduceMotion) { canvas.remove(); return; }
+      const ctx = canvas.getContext('2d');
+      let w, h, cols, drops;
+      const glyphs = '01<>[]{}#@%&/\\';
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        cols = Math.floor(w / 22);
+        drops = Array.from({ length: cols }, () => Math.random() * -50);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function draw() {
+        ctx.fillStyle = 'rgba(5,7,10,0.14)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.font = '15px "IBM Plex Mono", monospace';
+        for (let i = 0; i < cols; i++) {
+          const text = glyphs[Math.floor(Math.random() * glyphs.length)];
+          const x = i * 22;
+          const y = drops[i] * 22;
+          ctx.fillStyle = 'rgba(57,255,136,0.55)';
+          ctx.fillText(text, x, y);
+          if (y > h && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    })();
+
+    /* ---------- boot sequence ---------- */
+    const bootLines = [
+      '[ OK ] mounting /dev/rack0 ...',
+      '[ OK ] powering U1-U5 ...',
+      '[ OK ] linking telemetry bus ...',
+      '[ OK ] verifying uptime daemon ...',
+      '[ OK ] chassis ready.'
+    ];
+
+    function finishBoot() {
+      bootEl.classList.add('boot-done');
+      body.classList.remove('boot-active');
+      runHeroEntrance();
+    }
+
+    function runBootSequence() {
+      const seen = sessionStorage.getItem('rack-os-booted');
+      if (seen || reduceMotion) {
+        finishBoot();
+        return;
+      }
+      const tl = gsap.timeline({ onComplete: () => {
+        sessionStorage.setItem('rack-os-booted', '1');
+        gsap.to(bootEl, { opacity: 0, duration: 0.35, onComplete: finishBoot });
+      }});
+      bootLines.forEach((line, i) => {
+        tl.call(() => { bootLog.textContent += line + '\n'; }, null, i * 0.28);
+      });
+      tl.to(bootFill, { scaleX: 1, duration: bootLines.length * 0.28, ease: 'power1.inOut' }, 0);
+      tl.to({}, { duration: 0.3 });
+    }
+
+    /* ---------- hero + section entrance ---------- */
+    function runHeroEntrance() {
+      const heroUnits = document.querySelectorAll('.hero [data-runit]');
+      if (reduceMotion) {
+        gsap.set(heroUnits, { opacity: 1, y: 0 });
+      } else {
+        gsap.timeline({ defaults: { duration: 0.8, ease: 'power3.out' } })
+          .to(heroUnits, { opacity: 1, y: 0, stagger: 0.14 });
+      }
+      setupRailTracking();
+      startTerminalHero();
+    }
+
+    function setupRailTracking() {
+      const sectionIds = ['about', 'stack', 'projects', 'experience', 'contact'];
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top center',
+          end: 'bottom center',
+          toggleClass: { targets: `.rail-slot[data-target="${id}"]`, className: 'is-active' }
+        });
+      });
+
+      ScrollTrigger.create({
+        trigger: 'main',
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          const p = self.progress;
+          if (railBusFill) railBusFill.style.transform = `scaleY(${p})`;
+          if (topProgressFill) topProgressFill.style.width = `${(p * 100).toFixed(1)}%`;
+        }
+      });
+    }
+
+    /* ---------- uptime + clock ---------- */
+    const bootTime = Date.now();
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function tick() {
+      const elapsed = Math.floor((Date.now() - bootTime) / 1000);
+      const h = pad(Math.floor(elapsed / 3600));
+      const m = pad(Math.floor((elapsed % 3600) / 60));
+      const s = pad(elapsed % 60);
+      const el = document.getElementById('telUptime');
+      if (el) el.textContent = `${h}:${m}:${s}`;
+      const now = new Date();
+      const clock = document.getElementById('clock');
+      if (clock) clock.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+    setInterval(tick, 1000);
+    tick();
+
+    /* ---------- tooltips ---------- */
+    function positionTooltip(chip) {
+      const chipRect = chip.getBoundingClientRect();
+      const rect = tooltipPanel.getBoundingClientRect();
+      let left = chipRect.left + chipRect.width / 2 - rect.width / 2;
+      let top = chipRect.top - rect.height - 12;
+      if (left < 10) left = 10;
+      if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 10;
+      if (top < 10) top = chipRect.bottom + 12;
+      tooltipPanel.style.left = `${left}px`;
+      tooltipPanel.style.top = `${top}px`;
+    }
+
+    document.querySelectorAll('.chip[data-tooltip]').forEach((chip) => {
+      chip.addEventListener('mouseenter', () => {
+        tooltipPanel.textContent = chip.dataset.tooltip;
+        tooltipPanel.classList.add('visible');
+        positionTooltip(chip);
+      });
+      chip.addEventListener('mouseleave', () => tooltipPanel.classList.remove('visible'));
+    });
+
+    /* ---------- runit window controls ---------- */
+    function syncDock() {
+      dock.innerHTML = '';
+      runits.forEach((win) => {
+        if (win.classList.contains('rhidden') || win.classList.contains('minimized')) {
+          const label = win.querySelector('.runit-label')?.textContent?.trim().split('\n')[0] || 'panel';
+          const btn = document.createElement('button');
+          btn.className = 'dock-item';
+          btn.textContent = `restore ${label}`;
+          btn.addEventListener('click', () => restoreRunit(win));
+          dock.appendChild(btn);
+        }
+      });
+    }
+
+    function restoreRunit(win) {
+      win.classList.remove('rhidden', 'minimized');
+      if (win.classList.contains('maximized')) runitOverlay.classList.add('active');
+      syncDock();
+    }
+
+    function clearMaximized(except = null) {
+      runits.forEach((win) => { if (win !== except) win.classList.remove('maximized'); });
+      const any = runits.some((win) => win.classList.contains('maximized'));
+      runitOverlay.classList.toggle('active', any);
+    }
+
+    document.addEventListener('click', (event) => {
+      const control = event.target.closest('[data-action]');
+      if (!control) return;
+      const win = control.closest('[data-runit]');
+      if (!win) return;
+      const action = control.dataset.action;
+      if (action === 'maximize') {
+        const willMax = !win.classList.contains('maximized');
+        clearMaximized(willMax ? win : null);
+        win.classList.toggle('maximized', willMax);
+      }
+      if (action === 'minimize') {
+        win.classList.remove('rhidden');
+        win.classList.toggle('minimized');
+      }
+      if (action === 'close') {
+        win.classList.remove('maximized', 'minimized');
+        win.classList.toggle('rhidden');
+        clearMaximized();
+      }
+      syncDock();
+    });
+
+    runitOverlay.addEventListener('click', () => { clearMaximized(); syncDock(); });
+
+    /* ---------- hero terminal (the fun part) ---------- */
+    const heroLines = [
+      '<span class="hero-name" data-glitch="MASON&#10;GRAJCZYK"><span class="line">MASON</span><span class="line two">GRAJCZYK</span></span>',
+      '<p class="hero-bio">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>',
+      '<p class="hero-bio">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>',
+      `<div class="hero-badges">
+        <span class="badge">SELF-HOSTED SYSTEMS</span>
+        <span class="badge">CONTAINERIZED DEPLOYMENTS</span>
+        <span class="badge">HARDWARE + SOFTWARE</span>
+      </div>`,
+      `<div class="cta-row">
+        <a class="btn btn-accent" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open Resume.pdf</a>
+        <a class="btn btn-outline" href="#projects">View Project Log</a>
+      </div>`,
+      `<div class="metrics">
+        <div class="metric"><strong>Systems</strong><span>configuration, deployment, virtualization, stable environments</span></div>
+        <div class="metric"><strong>Hardware</strong><span>assembly, diagnostics, troubleshooting when things break</span></div>
+        <div class="metric"><strong>Workflow</strong><span>organized, detail-focused, steady in structured technical work</span></div>
+      </div>`
+    ];
+
+    function appendTerminalBlock(html) {
+      const block = document.createElement('div');
+      block.className = 'terminal-entry';
+      block.innerHTML = html;
+      terminalOutput.appendChild(block);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function appendTerminalText(text, tone) {
+      const line = document.createElement('div');
+      line.className = 'terminal-entry';
+      line.textContent = text;
+      if (tone === 'ok') line.style.color = 'var(--ok)';
+      if (tone === 'accent') line.style.color = 'var(--accent)';
+      terminalOutput.appendChild(line);
+      terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    function stopTerminalMode() {
+      if (!activeTerminalMode) return;
+      if (activeTerminalMode.interval) clearInterval(activeTerminalMode.interval);
+      if (activeTerminalMode.element?.isConnected) activeTerminalMode.element.remove();
+      activeTerminalMode = null;
+    }
+
+    function createModeBlock(className) {
+      stopTerminalMode();
+      const block = document.createElement('div');
+      block.className = `terminal-entry terminal-mode ${className}`;
+      terminalOutput.appendChild(block);
+      activeTerminalMode = { element: block, interval: null, type: className };
+      return block;
+    }
+
+    function revealHeroLines(index = 0) {
+      if (index >= heroLines.length) {
+        terminalInput.disabled = false;
+        return;
+      }
+      appendTerminalBlock(heroLines[index]);
+      setTimeout(() => revealHeroLines(index + 1), reduceMotion ? 0 : 150);
+    }
+
+    function renderFetchProfile() {
+      stopTerminalMode();
+      revealHeroLines();
+    }
+
+    function runHelp() {
+      appendTerminalBlock(`<pre style="margin:0;color:var(--term);">AVAILABLE COMMANDS
+help             show this command list
+fetch            print the profile block
+./fetch_profile  same as fetch
+clear            clear terminal output
+neofetch         show expanded system card
+ping             simulate localhost ping
+matrix           start matrix rain mode
+bonsai           grow a tiny terminal tree
+aquarium         launch ascii aquarium
+ndsu             print the NDSU ascii mark
+stop             stop active animation mode</pre>`);
+    }
+
+    function runMatrix() {
+      const block = createModeBlock('matrix');
+      const rows = 18;
+      const blockWidth = Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9));
+      const cols = Math.min(120, blockWidth);
+      const chars = '01<>[]{}$#@%&*+xyz';
+      const streams = Array.from({ length: cols }, () => Math.floor(Math.random() * rows));
+      const draw = () => {
+        const grid = Array.from({ length: rows }, () => Array(cols).fill(' '));
+        streams.forEach((head, x, index) => {
+          for (let y = 0; y < 7; y++) {
+            const row = (head - y + rows) % rows;
+            grid[row][x] = chars[Math.floor(Math.random() * chars.length)];
+          }
+          streams[index] = (head + 1) % rows;
+        });
+        block.textContent = grid.map((row) => row.join('')).join('\n');
+      };
+      draw();
+      activeTerminalMode.interval = setInterval(draw, 110);
+    }
+
+    function runBonsai() {
+      const block = createModeBlock('bonsai');
+      const frames = [
+`          &&&
+         &&&&&
+           ||
+          /||\\
+         //||\\
+        ___||___`,
+`           &&
+         &&&&&&
+        &&&&&&&&
+           ||
+          /||\\
+        __/||\\__`,
+`           &&
+         &&&&&&
+       &&&&&&&&&&
+          _||_
+         / || \\
+       _/  ||  \\_`
+      ];
+      let i = 0;
+      block.textContent = frames[0];
+      activeTerminalMode.interval = setInterval(() => {
+        i = (i + 1) % frames.length;
+        block.textContent = frames[i];
+      }, 700);
+    }
+
+    function runAquarium() {
+      const block = createModeBlock('aquarium');
+      const width = Math.min(110, Math.max(72, Math.floor((terminalOutput.clientWidth || 720) / 9)));
+      const fish = [
+        { x: 2, y: 4, dir: 1, right: '><((*>', left: '<*)))><' },
+        { x: width - 14, y: 10, dir: -1, right: '><{{(°>', left: '<°)}}><' },
+        { x: Math.floor(width / 2), y: 7, dir: 1, right: '><> ', left: ' <><' }
+      ];
+      const seaweed = [8, Math.floor(width * 0.35), Math.floor(width * 0.62), width - 10];
+      const draw = () => {
+        const rows = Array.from({ length: 16 }, () => Array(width).fill(' '));
+        seaweed.forEach((x, idx) => {
+          for (let y = 10; y < 16; y++) {
+            const sway = ((y + idx) % 2);
+            const px = Math.max(0, Math.min(width - 1, x + sway));
+            rows[y][px] = '|';
+          }
+        });
+        fish.forEach((f) => {
+          const art = f.dir === 1 ? f.right : f.left;
+          for (let i = 0; i < art.length; i++) {
+            const x = f.x + i;
+            if (x >= 0 && x < width && f.y >= 0 && f.y < rows.length) rows[f.y][x] = art[i];
+          }
+          f.x += f.dir;
+          if (f.x <= 0 || f.x >= width - art.length) f.dir *= -1;
+          if (Math.random() > 0.76) f.y += Math.random() > 0.5 ? 1 : -1;
+          f.y = Math.max(2, Math.min(12, f.y));
+        });
+        rows[15] = Array(width).fill('~');
+        block.textContent = rows.map((row) => row.join('')).join('\n');
+      };
+      draw();
+      activeTerminalMode.interval = setInterval(draw, 240);
+    }
+
+    function runNDSU() {
+      appendTerminalBlock(`<pre style="margin:0;">
+
+
+
+
+          ----++----+##++--- ----
+        --+####################-- ----+--##+-
+        --+########+------+#########---+#########+-
+        --+###----+#####++###############+..-+####+-
+        ------++####+###########################+..-#+--+##+-
+        -#########################################-.+#---+##+-
+        -++++- -++++-++++++++####++###++++++++--++++-+######+++--##+--
+        --####+ +####+#########+-########-####--+####+##-----+###-+##+-
+        -#####-###+--###+-+###-####--##--####--###++###+-------++##+-
+        -+#########--+###--+###--#####+---###+-+###+######+---+--+#-
+        -###+#####---###+--###+---+####+-####--############----####- -+#++-
+        -+###-+####--+###+####++##+-+###++###+-+###+#######--+#+-+##-+##++-#-
+        -####+ +###+-#########--########++-########-########+-++###+---++--.+#-
+        ------ -------------- ------++#####+++++########--#####+- ++-#---+#-
+        --+#################- --++-- -+#--+#+-
+        --##########-###+- -++-
+        -+######+---+-- ----
+        -###+--- -
+        ---</pre>`);
+    }
+
+    function handleCommand(raw) {
+      const command = raw.trim();
+      if (!command) return;
+
+      appendTerminalText(`mason@rack:~$ ${command}`, 'ok');
+
+      if (command === 'clear') {
+        stopTerminalMode();
+        terminalOutput.innerHTML = '';
+        return;
+      }
+      if (command === 'help') { runHelp(); return; }
+      if (command === 'fetch' || command === './fetch_profile') { renderFetchProfile(); return; }
+      if (command === 'matrix') { runMatrix(); return; }
+      if (command === 'bonsai') { runBonsai(); return; }
+      if (command === 'aquarium') { runAquarium(); return; }
+      if (command === 'ndsu') { runNDSU(); return; }
+      if (command === 'stop') { stopTerminalMode(); appendTerminalText('stopped active terminal mode', 'accent'); return; }
+
+      if (command === 'neofetch') {
+        appendTerminalBlock(`<pre style="margin:0;color:var(--term);">███╗   ███╗   Mason Grajczyk
+████╗ ████║   ─────────────────────────
+██╔████╔██║   role: Computer Engineering student
+██║╚██╔╝██║   focus: systems / deployment / troubleshooting
+██║ ╚═╝ ██║   stack: Java / VHDL / MATLAB / Docker
+╚═╝     ╚═╝   infra: self-hosting / containerization / virtualization
+               school: North Dakota State University
+               location: Wayzata, MN / Fargo, ND
+               status: looking for technical opportunities
+</pre>`);
+        return;
+      }
+
+      if (command === 'ping') {
+        appendTerminalText('64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.034 ms', 'ok');
+        return;
+      }
+
+      appendTerminalText(`command not found: ${command}`);
+    }
+
+    function startTerminalHero() {
+      terminalInput.disabled = true;
+      const sequence = './fetch_profile';
+      if (reduceMotion) {
+        appendTerminalText(`mason@rack:~$ ${sequence}`, 'ok');
+        revealHeroLines();
+        return;
+      }
+      let typed = '';
+      let i = 0;
+      const typeTimer = setInterval(() => {
+        typed += sequence[i] || '';
+        terminalInput.value = typed;
+        i += 1;
+        if (i > sequence.length - 1) {
+          clearInterval(typeTimer);
+          setTimeout(() => {
+            appendTerminalText(`mason@rack:~$ ${sequence}`, 'ok');
+            terminalInput.value = '';
+            revealHeroLines();
+          }, 180);
+        }
+      }, 45);
+    }
+
+    terminalInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const value = terminalInput.value;
+      terminalInput.value = '';
+      handleCommand(value);
+    });
+
+    runBootSequence();
+  </script>
+</body>
+</html>
