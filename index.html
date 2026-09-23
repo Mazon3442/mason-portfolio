@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mason Grajczyk — Computer Engineering</title>
-  <meta name="description" content="Portfolio of Mason Grajczyk, Computer Engineering student focused on systems engineering, self-hosted infrastructure, deployment, and hardware diagnostics." />
+  <title>Mason Grajczyk · Computer Engineering</title>
+  <meta name="description" content="Mason Grajczyk, Computer Engineering student at NDSU. Self-hosted Linux and Docker infrastructure, Raspberry Pi hardware projects, and GPU-accelerated media processing." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,10 +20,16 @@
       --font-display: "Space Grotesk", sans-serif;
       --font-body: "Manrope", sans-serif;
       --max: 1120px;
-      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     }
 
     * { box-sizing: border-box; }
+
+    html { scroll-padding-top: 5rem; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+    }
 
     body {
       margin: 0;
@@ -96,10 +102,13 @@
       transition: color 180ms ease, border-color 180ms ease;
     }
 
-    .nav-links a:hover,
     .nav-links a.is-active {
       color: var(--ink);
       border-color: var(--accent);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .nav-links a:hover { color: var(--ink); border-color: var(--accent); }
     }
 
     @media (max-width: 720px) {
@@ -119,8 +128,14 @@
       border: 1px solid var(--ink);
       border-radius: 0;
       cursor: pointer;
-      transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+      transition:
+        background-color 180ms ease,
+        color 180ms ease,
+        border-color 180ms ease,
+        transform 160ms var(--ease-out);
     }
+
+    .btn:active { transform: scale(0.97); }
 
     .btn-accent {
       background: var(--accent);
@@ -128,14 +143,10 @@
       color: var(--accent-ink);
     }
 
-    .btn-accent:hover { background: var(--ink); border-color: var(--ink); }
-
     .btn-outline {
       background: transparent;
       color: var(--ink);
     }
-
-    .btn-outline:hover { background: var(--ink); color: var(--bg); }
 
     .btn-text {
       border-color: transparent;
@@ -145,7 +156,11 @@
       border-bottom: 1px solid var(--ink);
     }
 
-    .btn-text:hover { color: var(--accent); border-color: var(--accent); }
+    @media (hover: hover) and (pointer: fine) {
+      .btn-accent:hover { background: var(--ink); border-color: var(--ink); }
+      .btn-outline:hover { background: var(--ink); color: var(--bg); }
+      .btn-text:hover { color: var(--accent); border-color: var(--accent); }
+    }
 
     /* ---------- layout shell ---------- */
     section { padding: 5.5rem 0; border-bottom: 1px solid var(--border); }
@@ -211,21 +226,43 @@
       object-fit: cover;
     }
 
+    /* First-load entrance only. Seen once per visit, so it can take its time;
+       nothing below the hero animates on scroll. */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .hero-copy > * { opacity: 0; animation: fadeUp 700ms var(--ease) forwards; }
-    .hero-copy > *:nth-child(1) { animation-delay: 0ms; }
-    .hero-copy > *:nth-child(2) { animation-delay: 90ms; }
-    .hero-copy > *:nth-child(3) { animation-delay: 180ms; }
-    .hero-copy > *:nth-child(4) { animation-delay: 260ms; }
-    .hero-copy > *:nth-child(5) { animation-delay: 340ms; }
-    .hero-portrait { opacity: 0; animation: fadeUp 700ms var(--ease) 140ms forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes revealUp {
+      from { clip-path: inset(100% 0 0 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes settle {
+      from { transform: scale(1.06); }
+      to { transform: scale(1); }
+    }
+
+    .hero-copy > * { animation: fadeUp 600ms var(--ease-out) both; }
+    .hero-copy > *:nth-child(2) { animation-delay: 60ms; }
+    .hero-copy > *:nth-child(3) { animation-delay: 120ms; }
+    .hero-copy > *:nth-child(4) { animation-delay: 180ms; }
+    .hero-copy > *:nth-child(5) { animation-delay: 240ms; }
+
+    .hero-portrait { animation: revealUp 800ms var(--ease-out) 100ms both; }
+    .hero-portrait img {
+      transform-origin: 50% 100%;
+      animation: settle 1200ms var(--ease-out) 100ms both;
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      .hero-copy > *, .hero-portrait { opacity: 1; animation: none; }
+      .hero-copy > *, .hero-portrait { animation: fadeIn 300ms ease both; }
+      .hero-portrait img { animation: none; }
     }
 
     /* ---------- about ---------- */
@@ -248,7 +285,7 @@
     .stack-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 3rem;
+      gap: 2.5rem 3rem;
     }
 
     .stack-grid h3 { font-size: 1rem; color: var(--muted-2); font-weight: 600; margin-bottom: 1.1rem; }
@@ -259,8 +296,8 @@
       line-height: 1.9;
     }
 
-    .term-list li { display: inline; cursor: default; }
-    .term-list li:not(:last-child)::after { content: " · "; color: var(--border); }
+    .term-list li { display: inline; white-space: nowrap; }
+    .term-list li:not(:last-child)::after { content: "  ·  "; white-space: pre; color: var(--muted-2); }
 
     @media (max-width: 760px) {
       .stack-grid { grid-template-columns: 1fr; }
@@ -335,7 +372,9 @@
       display: inline-block;
     }
 
-    .contact-link:hover { color: var(--accent); border-color: var(--accent); }
+    @media (hover: hover) and (pointer: fine) {
+      .contact-link:hover { color: var(--accent); border-color: var(--accent); }
+    }
 
     @media (max-width: 760px) {
       .contact-grid { grid-template-columns: 1fr; }
@@ -350,8 +389,9 @@
 
     .footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
 
+    /* Reduced motion keeps color/opacity feedback, drops movement. */
     @media (prefers-reduced-motion: reduce) {
-      * { transition: none !important; }
+      .btn:active { transform: none; }
     }
   </style>
 </head>
@@ -377,15 +417,15 @@
         <div class="hero-copy">
           <p class="kicker">Computer engineering · North Dakota State University</p>
           <h1>Mason Grajczyk</h1>
-          <p class="hero-lede">Computer Engineering student with hands-on experience in system setup, software deployment, hardware troubleshooting, and managing technical environments that need to work consistently.</p>
-          <p class="hero-body">Interested in systems work, deployment, self-hosted infrastructure, and technical environments where reliability matters.</p>
+          <p class="hero-lede">Computer Engineering student who designs, runs, and fixes self-hosted infrastructure: Linux servers, containers, networking, and the hardware underneath.</p>
+          <p class="hero-body">Looking for systems, infrastructure, and DevOps work where things have to stay up.</p>
           <div class="cta-row">
             <a class="btn btn-accent" href="./Mason_Grajczyk_Resume2026_website.pdf" target="_blank" rel="noreferrer">Open résumé</a>
             <a class="btn-text" href="#projects">View projects</a>
           </div>
         </div>
         <div class="hero-portrait">
-          <img src="./NDSU_Fall2025-395.jpg" alt="Portrait of Mason Grajczyk" />
+          <img src="./portrait.jpg" width="960" height="1280" fetchpriority="high" alt="Portrait of Mason Grajczyk" />
         </div>
       </div>
     </section>
@@ -394,7 +434,7 @@
       <div class="wrap">
         <div class="section-head">
           <h2>Practical technical work, end to end.</h2>
-          <p>I do my best work where things need to function cleanly and consistently — troubleshooting, deploying, and organizing complex systems.</p>
+          <p>I do my best work where systems have to keep running. Troubleshooting, deploying, and organizing the pieces so they stay that way.</p>
         </div>
         <div class="about-grid">
           <div>
@@ -403,7 +443,7 @@
           </div>
           <div>
             <h3>What I like building</h3>
-            <p>Self-hosted infrastructure, deployment workflows, stable software environments, and technical setups where reliability actually matters.</p>
+            <p>Self-hosted infrastructure, deployment workflows, and projects where software meets physical hardware, like a touchscreen control panel for my own servers.</p>
           </div>
         </div>
       </div>
@@ -412,36 +452,52 @@
     <section id="stack">
       <div class="wrap">
         <div class="section-head">
-          <h2>Tools and strengths.</h2>
-          <p>The tools, systems, and strengths I'm most confident working with.</p>
+          <h2>Tools I actually use.</h2>
+          <p>Grouped by where they show up in the projects below.</p>
         </div>
         <div class="stack-grid">
           <div>
-            <h3>Programming + technical</h3>
+            <h3>Infrastructure</h3>
             <ul class="term-list">
-              <li title="Object-oriented programming language for structured software development and systems logic.">Java</li>
-              <li title="Hardware description language used for digital logic design and engineering coursework.">VHDL</li>
-              <li title="Numerical computing environment for analysis, simulation, and engineering workflows.">MATLAB</li>
-              <li title="Setting up operating environments, services, dependencies, and runtime behavior so systems stay usable.">System configuration</li>
-              <li title="Moving code or services into working environments with stability and repeatability in mind.">Software deployment</li>
-              <li title="Isolating services and applications in controlled, reproducible runtime environments.">Containerization</li>
-              <li title="Segmented software environments used to prevent dependency conflicts and deployment drift.">Virtual environments</li>
-              <li title="Identifying faults, tracing failures, and narrowing down root causes in technical systems.">System diagnostics</li>
-              <li title="Diagnosing physical system issues and restoring working configurations.">Hardware troubleshooting</li>
-              <li title="Building and validating complete computer systems with an eye for compatibility and reliability.">Custom PC assembly</li>
+              <li>Linux</li>
+              <li>Docker</li>
+              <li>Docker Compose</li>
+              <li>Nginx reverse proxy</li>
+              <li>Cloudflare DNS</li>
+              <li>TLS / Let's Encrypt</li>
+              <li>SSH</li>
+              <li>Pi-hole</li>
             </ul>
           </div>
           <div>
-            <h3>Professional</h3>
+            <h3>Hardware + media</h3>
             <ul class="term-list">
-              <li title="Working through technical or operational issues logically until the system is usable again.">Problem-solving</li>
-              <li title="Keeping workflows organized, supplied, and moving correctly day to day.">Operational management</li>
-              <li title="Checking equipment, outputs, or workflows for consistency, function, and correctness.">Quality control</li>
-              <li title="Working inside environments where procedures, standards, and risk management matter.">Safety compliance</li>
-              <li title="Shifting between fast-paced environments, tools, and responsibilities without losing reliability.">Adaptability</li>
-              <li title="Pulling together information from multiple sources and making it usable.">Data analysis</li>
-              <li title="Maintaining clean records and reducing errors in high-detail work.">Documentation accuracy</li>
-              <li title="Structuring tasks and systems so the work stays clear, efficient, and repeatable.">Workflow organization</li>
+              <li>Raspberry Pi 5</li>
+              <li>AMD GPU / VAAPI</li>
+              <li>FFmpeg</li>
+              <li>Tdarr</li>
+              <li>Custom PC builds</li>
+              <li>Hardware diagnostics</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Languages</h3>
+            <ul class="term-list">
+              <li>Python</li>
+              <li>JavaScript</li>
+              <li>Java</li>
+              <li>VHDL</li>
+              <li>MATLAB</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Practices</h3>
+            <ul class="term-list">
+              <li>Benchmarking</li>
+              <li>Backup + recovery</li>
+              <li>Service monitoring</li>
+              <li>Runbooks + documentation</li>
+              <li>Root-cause troubleshooting</li>
             </ul>
           </div>
         </div>
@@ -451,35 +507,48 @@
     <section id="projects">
       <div class="wrap">
         <div class="section-head">
-          <h2>Technical work.</h2>
-          <p>A few technical areas I've spent real time building in.</p>
+          <h2>Things I've built and keep running.</h2>
+          <p>Everything here runs on hardware I own and maintain, and each piece depends on the others. That's where I've learned the most.</p>
         </div>
         <div>
           <div class="work-item">
             <span class="work-index">01</span>
             <div class="work-body">
               <p class="work-meta">Infrastructure</p>
-              <h3>Server architecture &amp; deployment</h3>
-              <p>Designed, configured, and managed self-hosted environments using containerization to improve uptime, resource use, and network organization.</p>
-              <p class="work-tags">Deployment · Containers · Uptime</p>
+              <h3>Self-hosted homelab</h3>
+              <p>A Linux and Docker Compose platform I designed and operate. It hosts media streaming (Jellyfin), photo backup (Immich), password management (Vaultwarden), personal finance (Firefly III), game servers, databases, and monitoring.</p>
+              <p>Public services run behind Nginx Proxy Manager with Cloudflare DNS and Let's Encrypt certificates for HTTPS remote access. I wrote recovery procedures for network changes, service migrations, stale IP dependencies, and backup and rollback.</p>
+              <p class="work-tags">Linux · Docker Compose · Nginx · Cloudflare DNS · TLS</p>
             </div>
           </div>
           <div class="work-item">
             <span class="work-index">02</span>
             <div class="work-body">
-              <p class="work-meta">Software</p>
-              <h3>Software development &amp; integration</h3>
-              <p>Built custom software modifications and connected APIs with an emphasis on practical logic, systems thinking, and figuring out how moving parts fit together.</p>
-              <p class="work-tags">APIs · Logic · Integration</p>
+              <p class="work-meta">Hardware</p>
+              <h3>MasonDeck control console</h3>
+              <p>A Raspberry Pi 5 touchscreen kiosk that works as a physical control panel for the homelab. Its web dashboard runs on an SSH-backed API that shows service health and storage and runs server controls remotely.</p>
+              <p>The Pi also serves network-wide DNS through Pi-hole and is reachable over HTTPS through the homelab's reverse proxy. When the network was migrated, I updated service targets, rebuilt containers, and verified connectivity end to end.</p>
+              <p class="work-tags">Raspberry Pi 5 · SSH · Pi-hole · Docker</p>
             </div>
           </div>
           <div class="work-item">
             <span class="work-index">03</span>
             <div class="work-body">
-              <p class="work-meta">Diagnostics</p>
-              <h3>System diagnostics &amp; virtualization</h3>
-              <p>Used troubleshooting and isolated environments to resolve software conflicts and support stable deployment of demanding technical tools.</p>
-              <p class="work-tags">Troubleshooting · Virtualization · Stability</p>
+              <p class="work-meta">Performance</p>
+              <h3>GPU-accelerated media transcoding</h3>
+              <p>A hybrid GPU/CPU transcoding pipeline built on Tdarr, FFmpeg, and an AMD Radeon RX 6600 through VAAPI. Benchmarking hardware HEVC against H.264 showed a severe HEVC bottleneck on this card, so I redesigned the pipeline around speed instead of forcing HEVC.</p>
+              <p>Codec, bitrate, and file-state rules skip media that's already efficient, and every output keeps its filename, metadata, subtitles, and audio tracks.</p>
+              <p class="work-tags">FFmpeg · VAAPI · Tdarr · Docker · Benchmarking</p>
+            </div>
+          </div>
+          <div class="work-item">
+            <span class="work-index">04</span>
+            <div class="work-body">
+              <p class="work-meta">Automation</p>
+              <h3>Automation assistant</h3>
+              <p>Configured and extended OpenClaw, a self-hosted AI automation platform, to run scheduled health checks across the homelab and handle diagnostics and limited remote administration through Telegram.</p>
+              <p>Its runbooks and project notes live in a Markdown knowledge base in Obsidian, with backups.</p>
+              <p class="work-tags">OpenClaw · Telegram · Obsidian · Automation</p>
             </div>
           </div>
         </div>
@@ -494,7 +563,7 @@
         </div>
         <div>
           <div class="exp-item">
-            <div class="exp-meta"><strong>2024 — 2025</strong>Edina, MN</div>
+            <div class="exp-meta"><strong>2024–2025</strong>Edina, MN</div>
             <div class="exp-body">
               <h3>Medical Records Technician — OGI</h3>
               <ul>
@@ -505,7 +574,7 @@
             </div>
           </div>
           <div class="exp-item">
-            <div class="exp-meta"><strong>2023 — Current</strong>Fargo, ND</div>
+            <div class="exp-meta"><strong>2023–present</strong>Fargo, ND</div>
             <div class="exp-body">
               <h3>Outdoor Adventures — NDSU Wellness Center</h3>
               <ul>
@@ -516,7 +585,7 @@
             </div>
           </div>
           <div class="exp-item">
-            <div class="exp-meta"><strong>2021 — 2025</strong>Plymouth, MN</div>
+            <div class="exp-meta"><strong>2021–2025</strong>Plymouth, MN</div>
             <div class="exp-body">
               <h3>Meat Clerk — Hy-Vee</h3>
               <ul>
